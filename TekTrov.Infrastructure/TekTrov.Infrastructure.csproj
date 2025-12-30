@@ -7,60 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs" />
-    <Compile Include="obj\Debug\net8.0\TekTrov.Infrastructure.AssemblyInfo.cs" />
-    <Compile Include="obj\Debug\net8.0\TekTrov.Infrastructure.GlobalUsings.g.cs" />
-    <Compile Include="obj\Release\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs" />
-    <Compile Include="obj\Release\net8.0\TekTrov.Infrastructure.AssemblyInfo.cs" />
-    <Compile Include="obj\Release\net8.0\TekTrov.Infrastructure.GlobalUsings.g.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="bin\Debug\net8.0\TekTrov.Infrastructure.deps.json" />
-    <Content Include="bin\Debug\net8.0\TekTrov.Infrastructure.runtimeconfig.json" />
-    <Content Include="obj\Debug\net8.0\TekTrov.Infrastructure.csproj.FileListAbsolute.txt" />
-    <Content Include="obj\Debug\net8.0\TekTrov.Infrastructure.sourcelink.json" />
-    <Content Include="obj\project.assets.json" />
-    <Content Include="obj\TekTrov.Infrastructure.csproj.nuget.dgspec.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="bin\Debug\net8.0\TekTrov.Application.dll" />
-    <None Include="bin\Debug\net8.0\TekTrov.Application.pdb" />
-    <None Include="bin\Debug\net8.0\TekTrov.Domain.dll" />
-    <None Include="bin\Debug\net8.0\TekTrov.Domain.pdb" />
-    <None Include="bin\Debug\net8.0\TekTrov.Infrastructure.dll" />
-    <None Include="bin\Debug\net8.0\TekTrov.Infrastructure.pdb" />
-    <None Include="obj\Debug\net8.0\refint\TekTrov.Infrastructure.dll" />
-    <None Include="obj\Debug\net8.0\ref\TekTrov.Infrastructure.dll" />
-    <None Include="obj\Debug\net8.0\TekTrov..A165DA63.Up2Date" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.AssemblyInfoInputs.cache" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.assets.cache" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.csproj.AssemblyReference.cache" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.csproj.BuildWithSkipAnalyzers" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.csproj.CoreCompileInputs.cache" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.dll" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.genruntimeconfig.cache" />
-    <None Include="obj\Debug\net8.0\TekTrov.Infrastructure.pdb" />
-    <None Include="obj\project.nuget.cache" />
-    <None Include="obj\Release\net8.0\TekTrov.Infrastructure.AssemblyInfoInputs.cache" />
-    <None Include="obj\Release\net8.0\TekTrov.Infrastructure.assets.cache" />
-    <None Include="obj\Release\net8.0\TekTrov.Infrastructure.csproj.AssemblyReference.cache" />
-    <None Include="obj\Release\net8.0\TekTrov.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig" />
-    <None Include="obj\TekTrov.Infrastructure.csproj.nuget.g.props" />
-    <None Include="obj\TekTrov.Infrastructure.csproj.nuget.g.targets" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TekTrov.Application\TekTrov.Application.csproj" />
     <ProjectReference Include="..\TekTrov.Domain\TekTrov.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="bin\Release\net8.0\" />
-    <Folder Include="obj\Release\net8.0\refint\" />
-    <Folder Include="obj\Release\net8.0\ref\" />
   </ItemGroup>
 
 </Project>
