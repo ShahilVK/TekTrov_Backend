@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TekTrov.WebAPI", "TekTrov.W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TekTrov.Domain", "..\TekTrov.Domain\TekTrov.Domain.csproj", "{BD0A6A01-714A-4988-A016-8FC39ADD927D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TekTrov.Infrastructure", "..\TekTrov.Infrastructure\TekTrov.Infrastructure.csproj", "{9848E1C8-9898-4A1C-BF59-CB37B0CDA730}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TekTrov.Application", "..\TekTrov.Application\TekTrov.Application.csproj", "{A0C2A486-9081-4545-9421-4C82A9913B4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{BD0A6A01-714A-4988-A016-8FC39ADD927D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD0A6A01-714A-4988-A016-8FC39ADD927D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD0A6A01-714A-4988-A016-8FC39ADD927D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9848E1C8-9898-4A1C-BF59-CB37B0CDA730}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9848E1C8-9898-4A1C-BF59-CB37B0CDA730}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9848E1C8-9898-4A1C-BF59-CB37B0CDA730}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9848E1C8-9898-4A1C-BF59-CB37B0CDA730}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0C2A486-9081-4545-9421-4C82A9913B4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0C2A486-9081-4545-9421-4C82A9913B4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0C2A486-9081-4545-9421-4C82A9913B4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0C2A486-9081-4545-9421-4C82A9913B4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
