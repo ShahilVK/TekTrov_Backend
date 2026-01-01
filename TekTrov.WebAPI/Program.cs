@@ -1,44 +1,265 @@
+﻿
+
+//using ECommerce.Infrastructure.Data;
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.EntityFrameworkCore;
+//using Microsoft.IdentityModel.Tokens;
+//using Microsoft.OpenApi.Models;
+//using System.Security.Claims;
+//using System.Text;
+//using TekTrov.Application.DTOs;
+//using TekTrov.Application.Interfaces.Repositories;
+//using TekTrov.Application.Interfaces.Services;
+//using TekTrov.Application.Services;
+//using TekTrov.Infrastructure.Repositories;
+//using Microsoft.Extensions.Options;
+//using System.IdentityModel.Tokens.Jwt;
+
+//var builder = WebApplication.CreateBuilder(args);
+
+//// --------------------
+//// Controllers & Swagger
+//// --------------------
+//builder.Services.AddControllers();
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen(options =>
+//{
+//    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+//    {
+//        Name = "Authorization",
+//        Type = SecuritySchemeType.Http,
+//        Scheme = "Bearer",
+//        BearerFormat = "JWT",
+//        In = ParameterLocation.Header,
+//        Description = "Enter JWT like: Bearer {token}"
+//    });
+
+//    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+//    {
+//        {
+//            new OpenApiSecurityScheme
+//            {
+//                Reference = new OpenApiReference
+//                {
+//                    Type = ReferenceType.SecurityScheme,
+//                    Id = "Bearer"
+//                }
+//            },
+//            Array.Empty<string>()
+//        }
+//    });
+//});
+
+//// --------------------
+//// Database
+//// --------------------
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer(
+//        builder.Configuration.GetConnectionString("DefaultConnection")
+//    )
+//);
+
+//// --------------------
+//// JWT Settings
+//// --------------------
+//builder.Services.Configure<JwtSettings>(
+//    builder.Configuration.GetSection("Jwt")
+//);
+//builder.Services.AddSingleton(sp =>
+//    sp.GetRequiredService<IOptions<JwtSettings>>().Value
+//);
+
+//// --------------------
+//// Services
+//// --------------------
+//builder.Services.AddScoped<IJwtService, JwtService>();
+
+//builder.Services.AddScoped<IUserRepository, UserRepository>();
+//builder.Services.AddScoped<IUserService, UserService>();
+
+//builder.Services.AddScoped<IProductRepository, ProductRepository>();
+//builder.Services.AddScoped<IProductService, ProductService>();
+
+//builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
+//builder.Services.AddScoped<IWishlistService, WishlistService>();
+
+//builder.Services.AddScoped<ICartRepository, CartRepository>();
+//builder.Services.AddScoped<ICartService, CartService>();
+
+//builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+//builder.Services.AddScoped<IOrderService, OrderService>();
+
+//// --------------------
+//// Authentication (JWT)
+//// --------------------
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//})
+//.AddJwtBearer(options =>
+//{
+//    var sp = builder.Services.BuildServiceProvider();
+//    var jwtSettings = sp.GetRequiredService<JwtSettings>();
+//    var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
+
+//    options.RequireHttpsMetadata = false;
+//    options.SaveToken = true;
+
+//    options.TokenValidationParameters = new TokenValidationParameters
+//    {
+//        ValidateIssuerSigningKey = true,
+//        IssuerSigningKey = new SymmetricSecurityKey(key),
+
+//        ValidateIssuer = true,
+//        ValidIssuer = jwtSettings.Issuer,
+
+//        ValidateAudience = true,
+//        ValidAudience = jwtSettings.Audience,
+
+//        ValidateLifetime = true,
+//        ClockSkew = TimeSpan.Zero,
+
+//        // ✅ Important: map Sub claim to User.Identity.Name
+//        NameClaimType = JwtRegisteredClaimNames.Sub,
+//        RoleClaimType = ClaimTypes.Role
+//    };
+
+//    options.Events = new JwtBearerEvents
+//    {
+//        OnMessageReceived = context =>
+//        {
+//            var token = context.Request.Cookies["accessToken"];
+//            if (!string.IsNullOrEmpty(token))
+//            {
+//                context.Token = token;
+//            }
+//            return Task.CompletedTask;
+//        },
+//        OnChallenge = context =>
+//        {
+//            context.HandleResponse();
+//            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+//            context.Response.ContentType = "application/json";
+
+//            return context.Response.WriteAsync(
+//                System.Text.Json.JsonSerializer.Serialize(new
+//                {
+//                    error = "Unauthorized",
+//                    message = "JWT token is missing or invalid"
+//                })
+//            );
+//        },
+//        OnForbidden = context =>
+//        {
+//            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+//            context.Response.ContentType = "application/json";
+
+//            return context.Response.WriteAsync(
+//                System.Text.Json.JsonSerializer.Serialize(new
+//                {
+//                    error = "Forbidden",
+//                    message = "You do not have permission to access this resource"
+//                })
+//            );
+//        }
+//    };
+//});
+
+//// --------------------
+//// Authorization Policies
+//// --------------------
+//builder.Services.AddAuthorization(options =>
+//{
+//    options.AddPolicy("AdminOnly", policy =>
+//        policy.RequireRole("Admin"));
+
+//    options.AddPolicy("UserOnly", policy =>
+//        policy.RequireRole("User"));
+//});
+
+//// --------------------
+//// Pipeline
+//// --------------------
+//var app = builder.Build();
+
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+//app.UseAuthentication();
+//app.UseAuthorization();
+
+//app.MapControllers();
+//app.Run();
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using TekTrov.Application.DTOs;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Application.Services;
 using TekTrov.Infrastructure.Repositories;
-using TekTrov.Application.DTOs;
-
-
-
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// --------------------
+// Controllers & Swagger
+// --------------------
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {JWT token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+// --------------------
+// Database
+// --------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
-var jwtSettings = builder.Configuration
-    .GetSection("Jwt")
-    .Get<JwtSettings>();
 
-builder.Services.AddSingleton(jwtSettings);
+// --------------------
+// JWT Settings
+// --------------------
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
+// --------------------
+// Services
+// --------------------
 builder.Services.AddScoped<IJwtService, JwtService>();
-
-
-
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
@@ -54,49 +275,104 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
-builder.Services.AddScoped<IOrderService, OrderService>();
-
-
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
+// --------------------
+// Authentication (JWT)
+// --------------------
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
+    var jwtSettings = builder.Configuration
+        .GetSection("Jwt")
+        .Get<JwtSettings>()
+        ?? throw new InvalidOperationException("JWT settings missing");
+
+    var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
+
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-        )
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings.Issuer,
+
+        ValidateAudience = true,
+        ValidAudience = jwtSettings.Audience,
+
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
+
+        NameClaimType = JwtRegisteredClaimNames.Sub, // 🔑 maps "sub" claim to User.Identity.Name
+        RoleClaimType = ClaimTypes.Role
     };
+
+    // ✅ Allow JWT from cookie if needed
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            if (string.IsNullOrEmpty(context.Token) && context.Request.Cookies.ContainsKey("accessToken"))
+            {
+                context.Token = context.Request.Cookies["accessToken"];
+            }
+            return Task.CompletedTask;
+        },
+
+        OnChallenge = context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/json";
+
+            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                statusCode = 401,
+                message = "Invalid or missing token",
+                data = (object?)null
+            }));
+        },
+
+        OnForbidden = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            context.Response.ContentType = "application/json";
+
+            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                statusCode = 403,
+                message = "You do not have permission to access this resource",
+                data = (object?)null
+            }));
+        }
+    };
+});
+
+// --------------------
+// Authorization
+// --------------------
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
 });
 
 
 var app = builder.Build();
 
-
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
-app.UseAuthentication();
+// 🔒 HTTPS redirection
+app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

@@ -7,6 +7,8 @@ namespace TekTrov.Application.Interfaces.Repositories
         Task<List<Product>> GetAllAsync();
         Task<Product?> GetByIdAsync(int id);
 
+        Task AddAsync(Product product);
+
         Task<List<Product>> GetByCategoryAsync(string category);
     }
 }

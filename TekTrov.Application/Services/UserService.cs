@@ -26,17 +26,34 @@ namespace TekTrov.Application.Services
             _jwtService = jwtService;
         }
 
+
+
+
         //public async Task RegisterAsync(RegisterDTO dto)
         //{
-        //    var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
+        //    var name = dto.Name.Trim();
+        //    var email = dto.Email.Trim().ToLower();
+
+        //    if (string.IsNullOrWhiteSpace(name))
+        //        throw new Exception("Invalid name");
+
+        //    if (string.IsNullOrWhiteSpace(email))
+        //        throw new Exception("Invalid email");
+
+        //    var existingUser = await _userRepository.GetByEmailAsync(email);
         //    if (existingUser != null)
-        //        throw new Exception("User already exists");
+        //        throw new Exception("Email already registered");
+
+        //    var hashedPassword = BCrypt.Net.BCrypt.HashPassword(
+        //        dto.Password,
+        //        workFactor: 12   
+        //    );
 
         //    var user = new User
         //    {
-        //        Name = dto.Name,
-        //        Email = dto.Email,
-        //        Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+        //        Name = name,
+        //        Email = email,
+        //        Password = hashedPassword,
         //        Role = "User"
         //    };
 
@@ -46,26 +63,39 @@ namespace TekTrov.Application.Services
 
         public async Task RegisterAsync(RegisterDTO dto)
         {
-            var name = dto.Name.Trim();
-            var email = dto.Email.Trim().ToLower();
+            // Final safety (NO helpers, NO trimming logic)
+            if (dto.Name.StartsWith(" ") ||
+                dto.Email.StartsWith(" ") ||
+                dto.Password.StartsWith(" "))
+                throw new Exception("Leading spaces are not allowed");
+
+            var email = dto.Email.ToLower();
 
             var existingUser = await _userRepository.GetByEmailAsync(email);
             if (existingUser != null)
                 throw new Exception("Email already registered");
 
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(
+                dto.Password,
+                workFactor: 12
+            );
+
             var user = new User
             {
-                Name = name,
+                Name = dto.Name,
                 Email = email,
-                Password = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Password = hashedPassword,
                 Role = "User"
             };
 
             await _userRepository.AddAsync(user);
         }
+
         public async Task<AuthResponseDTO> LoginAsync(LoginDTO dto)
         {
-            var user = await _userRepository.GetByEmailAsync(dto.Email);
+            var email = dto.Email.Trim().ToLower();
+
+            var user = await _userRepository.GetByEmailAsync(email);
 
             if (user == null ||
                 !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
@@ -77,7 +107,7 @@ namespace TekTrov.Application.Services
             var refreshToken = _jwtService.GenerateRefreshToken();
 
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
             await _userRepository.UpdateAsync(user);
 

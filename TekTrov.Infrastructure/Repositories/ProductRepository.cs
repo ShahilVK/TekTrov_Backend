@@ -37,5 +37,11 @@ namespace TekTrov.Infrastructure.Repositories
                 .Where(p => p.Category == category)
                 .ToListAsync();
         }
+
+        public async Task AddAsync(Product product)
+        {
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+        }
     }
 }

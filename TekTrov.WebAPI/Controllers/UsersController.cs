@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TekTrov.Application.Common;
 using TekTrov.Application.Interfaces.Services;
 
 namespace TekTrov.WebApi.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize(Roles = "Admin")] // 🔒 ADMIN ONLY
+[Authorize(Roles = "Admin")]    
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -16,15 +17,24 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
-    // ✅ GET /api/users/{id}
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetUserById(int id)
     {
         var user = await _userService.GetUserByIdAsync(id);
 
         if (user == null)
-            return NotFound("User not found");
+        {
+            return NotFound(
+                ApiResponse<object>.FailureResponse(
+                    "User not found",
+                    404
+                ));
+        }
 
-        return Ok(user);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                user,
+                "User fetched successfully"
+            ));
     }
 }

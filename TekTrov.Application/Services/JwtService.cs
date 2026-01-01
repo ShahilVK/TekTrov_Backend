@@ -1,4 +1,70 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿
+//using Microsoft.IdentityModel.Tokens;
+//using System.IdentityModel.Tokens.Jwt;
+//using System.Security.Claims;
+//using System.Security.Cryptography;
+//using System.Text;
+//using TekTrov.Application.DTOs;
+//using TekTrov.Application.Interfaces.Services;
+
+//namespace TekTrov.Application.Services
+//{
+//    public class JwtService : IJwtService
+//    {
+//        private readonly JwtSettings _settings;
+
+//        public JwtService(JwtSettings settings)
+//        {
+//            _settings = settings;
+//        }
+
+
+//        public string GenerateAccessToken(int userId, string email, string role)
+//        {
+//            var claims = new List<Claim>
+//            {
+
+//                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+//                new Claim(JwtRegisteredClaimNames.Email, email),
+//                new Claim(ClaimTypes.Role, role)
+//            };
+
+//            var key = new SymmetricSecurityKey(
+//                Encoding.UTF8.GetBytes(_settings.Key)
+//            );
+
+//            var creds = new SigningCredentials(
+//                key,
+//                SecurityAlgorithms.HmacSha256
+//            );
+
+//            var token = new JwtSecurityToken(
+//                issuer: _settings.Issuer,
+//                audience: _settings.Audience,
+//                claims: claims,
+//                expires: DateTime.UtcNow.AddMinutes(
+//                    _settings.DurationInMinutes
+//                ),
+//                signingCredentials: creds
+//            );
+
+//            return new JwtSecurityTokenHandler()
+//                .WriteToken(token);
+//        }
+
+//        public string GenerateRefreshToken()
+//        {
+//            var randomBytes = new byte[64];
+//            using var rng = RandomNumberGenerator.Create();
+//            rng.GetBytes(randomBytes);
+//            return Convert.ToBase64String(randomBytes);
+//        }
+//    }
+//}
+
+
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -6,45 +72,55 @@ using System.Text;
 using TekTrov.Application.DTOs;
 using TekTrov.Application.Interfaces.Services;
 
-public class JwtService : IJwtService
+namespace TekTrov.Application.Services
 {
-    private readonly JwtSettings _settings;
-
-    public JwtService(JwtSettings settings)
+    public class JwtService : IJwtService
     {
-        _settings = settings;
-    }
+        private readonly JwtSettings _settings;
 
-    public string GenerateAccessToken(int userId, string email, string role)
-    {
-        var claims = new[]
+        // ✅ Use IOptions<JwtSettings> for DI
+        public JwtService(IOptions<JwtSettings> options)
         {
-            new Claim("userId", userId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim("Role", role)
-        };
+            _settings = options.Value;
+        }
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_settings.Key));
+        // ✅ Generate Access Token
+        public string GenerateAccessToken(int userId, string email, string role)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(ClaimTypes.Role, role)
+            };
 
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_settings.Key)
+            );
 
-        var token = new JwtSecurityToken(
-            issuer: _settings.Issuer,
-            audience: _settings.Audience,
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(_settings.DurationInMinutes),
-            signingCredentials: creds
-        );
+            var creds = new SigningCredentials(
+                key,
+                SecurityAlgorithms.HmacSha256
+            );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
+            var token = new JwtSecurityToken(
+                issuer: _settings.Issuer,
+                audience: _settings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_settings.DurationInMinutes),
+                signingCredentials: creds
+            );
 
-    public string GenerateRefreshToken()
-    {
-        var bytes = new byte[64];
-        using var rng = RandomNumberGenerator.Create();
-        rng.GetBytes(bytes);
-        return Convert.ToBase64String(bytes);
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        // ✅ Generate a secure refresh token
+        public string GenerateRefreshToken()
+        {
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
+        }
     }
 }

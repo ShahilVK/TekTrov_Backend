@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using TekTrov.Application.Common;
 using TekTrov.Application.DTOs.Auth;
 using TekTrov.Application.Interfaces.Services;
 
@@ -19,29 +20,43 @@ public class AuthController : ControllerBase
         _userService = userService;
     }
 
-    //[HttpPost("register")]
-    //public async Task<IActionResult> Register(RegisterDTO dto)
-    //{
-    //    await _userService.RegisterAsync(dto);
-    //    return Ok("User registered successfully");
-    //}
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            return BadRequest(
+                ApiResponse<object>.FailureResponse(
+                    "Validation failed", 400));
+        }
 
         await _userService.RegisterAsync(dto);
-        return Ok("User registered successfully");
+
+        return StatusCode(201,
+    ApiResponse<object>.SuccessResponse(
+        null,
+        "User registered successfully",
+        201
+    ));
+
     }
 
+
+
+
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDTO dto)
+    public async Task<IActionResult> Login([FromBody] LoginDTO dto)
     {
         var result = await _userService.LoginAsync(dto);
-        return Ok(result);
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                result,
+                "Login successful"));
     }
+
+
 
 
 
@@ -55,6 +70,10 @@ public class AuthController : ControllerBase
         );
 
         await _userService.LogoutAsync(userId);
-        return Ok("Logout successful");
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                null,
+                "Logout successful"));
     }
 }

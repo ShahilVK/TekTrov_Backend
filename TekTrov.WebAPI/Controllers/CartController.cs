@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using TekTrov.Application.Common;
 using TekTrov.Application.DTOs.Cart;
 using TekTrov.Application.Interfaces.Services;
 
@@ -22,37 +23,85 @@ public class CartController : ControllerBase
     [HttpPost("{productId:int}")]
     public async Task<IActionResult> AddToCart(int productId)
     {
-        var userId = int.Parse(
-            User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-        );
+        var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub);
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized(
+                ApiResponse<object>.FailureResponse(
+                    "Invalid or missing token",
+                    401
+                ));
+        }
+
+        //var userId = int.Parse(userIdClaim.Value);
+        var userId = int.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
+
 
         await _cartService.AddToCartAsync(userId, productId);
-        return Ok("Product added to cart");
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                null,
+                "Product added to cart"
+            ));
     }
 
+    // ✅ GET /api/cart
     [HttpGet]
     public async Task<IActionResult> GetCart()
     {
-        var userId = int.Parse(
-            User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-        );
+        var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub);
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized(
+                ApiResponse<object>.FailureResponse(
+                    "Invalid or missing token",
+                    401
+                ));
+        }
+
+        var userId = int.Parse(userIdClaim.Value);
 
         var cartItems = await _cartService.GetCartAsync(userId);
-        return Ok(cartItems);
+
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                cartItems,
+                "Cart items fetched successfully"
+            ));
     }
 
+    // ✅ PUT /api/cart/{productId}
     [HttpPut("{productId:int}")]
     public async Task<IActionResult> UpdateCartItem(
-       int productId,
-       UpdateCartDTO dto)
+        int productId,
+        [FromBody] UpdateCartDTO dto)
     {
-        var userId = int.Parse(
-            User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-        );
+        var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub);
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized(
+                ApiResponse<object>.FailureResponse(
+                    "Invalid or missing token",
+                    401
+                ));
+        }
+
+        var userId = int.Parse(userIdClaim.Value);
 
         await _cartService.UpdateCartAsync(
-            userId, productId, dto.Quantity);
+            userId,
+            productId,
+            dto.Quantity
+        );
 
-        return Ok("Cart updated successfully");
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                null,
+                "Cart updated successfully"
+            ));
     }
 }
