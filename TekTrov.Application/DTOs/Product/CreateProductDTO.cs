@@ -10,7 +10,7 @@ namespace TekTrov.Application.DTOs.Products
     public class CreateProductDTO
     {
         [Required]
-        [RegularExpression(@"^(?!\s)[A-Za-z0-9 ]{2,100}$")]
+        [MaxLength(100)]
         public string Name { get; set; } = null!;
 
         [Required]
@@ -18,14 +18,14 @@ namespace TekTrov.Application.DTOs.Products
         [MaxLength(500)]
         public string Description { get; set; } = null!;
 
-        [Range(1, 1_000_000)]
+        [Range(1, 10000)]
         public decimal Price { get; set; }
 
         [Required]
-        [RegularExpression(@"^(?!\s)[A-Za-z ]{2,50}$")]
+        //[RegularExpression(@"^(?!\s)[A-Za-z ]{2,50}$")]
         public string Category { get; set; } = null!;
 
-        [Range(0, 10_000)]
+        [Range(0, 10000)]
         public int Stock { get; set; }
     }
 }

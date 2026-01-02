@@ -11,24 +11,7 @@ namespace TekTrov.Application.DTOs.Auth
 
 
 
-    //public class RegisterDTO
-    //{
-    //    [Required]
-    //    [DefaultValue("myname")]
-    //    [RegularExpression(@"^(?!\s)[A-Za-z ]{2,50}$",
-    //        ErrorMessage = "Name must not start with space and must be valid")]
-    //    public string Name { get; set; } = null!;
-
-
-    //    [Required]
-    //    [RegularExpression(@"^(?!\s)[^@\s]+@[^@\s]+\.[^@\s]+$",
-    //        ErrorMessage = "Invalid email format")]
-    //    public string Email { get; set; } = null!;
-
-    //    [Required]
-
-    //    public string Password { get; set; } = null!;
-    //}
+    
 
     public class RegisterDTO
     {

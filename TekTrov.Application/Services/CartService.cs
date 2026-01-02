@@ -64,4 +64,14 @@ public class CartService : ICartService
         cartItem.Quantity = quantity;
         await _cartRepository.UpdateAsync(cartItem);
     }
+
+    public async Task RemoveFromCartAsync(int userId, int productId)
+    {
+        var cartItem = await _cartRepository.GetAsync(userId, productId);
+
+        if (cartItem == null)
+            throw new Exception("Cart item not found");
+
+        await _cartRepository.RemoveAsync(cartItem);
+    }
 }

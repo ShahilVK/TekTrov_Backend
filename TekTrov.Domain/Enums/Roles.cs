@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace TekTrov.Domain.Enums
 {
-    public enum Roles
+    public static class Roles
     {
-        user,
-        admin
+        public const string Admin = "Admin";
+        public const string User = "User";
     }
 }

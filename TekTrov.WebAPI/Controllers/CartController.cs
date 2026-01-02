@@ -10,7 +10,8 @@ namespace TekTrov.WebApi.Controllers;
 
 [ApiController]
 [Route("api/cart")]
-[Authorize]
+[Authorize(Roles = "User")]
+
 public class CartController : ControllerBase
 {
     private readonly ICartService _cartService;
@@ -73,6 +74,21 @@ public class CartController : ControllerBase
         return Ok(ApiResponse<object>.SuccessResponse(
             null,
             "Cart updated successfully"
+        ));
+    }
+
+    [HttpDelete("{productId:int}")]
+    public async Task<IActionResult> RemoveFromCart(int productId)
+    {
+        var userId = int.Parse(
+            User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+        );
+
+        await _cartService.RemoveFromCartAsync(userId, productId);
+
+        return Ok(ApiResponse<object>.SuccessResponse(
+            null,
+            "Product removed from cart"
         ));
     }
 }

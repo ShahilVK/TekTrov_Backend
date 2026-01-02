@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TekTrov.Application.Common;
 using TekTrov.Application.DTOs.Products;
 using TekTrov.Application.Interfaces.Services;
+using TekTrov.Domain.Enums;
 
 namespace TekTrov.WebApi.Controllers
 {
@@ -68,7 +69,7 @@ namespace TekTrov.WebApi.Controllers
                 ));
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO dto)
         {

@@ -15,5 +15,6 @@ namespace TekTrov.Application.Interfaces.Services
         Task<List<CartItemResponseDTO>> GetCartAsync(int userId);
 
         Task UpdateCartAsync(int userId, int productId, int quantity);
+        Task RemoveFromCartAsync(int userId, int productId);
     }
 }
