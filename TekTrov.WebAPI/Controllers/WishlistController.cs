@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using TekTrov.Application.Common;
 using TekTrov.Application.Interfaces.Services;
 
 namespace TekTrov.WebApi.Controllers;
@@ -37,6 +38,11 @@ public class WishlistController : ControllerBase
 
         var wishlist = await _wishlistService.GetWishlistAsync(userId);
 
-        return Ok(wishlist);
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                wishlist,
+                "Wishlist fetched successfully"
+            )
+        );
     }
 }

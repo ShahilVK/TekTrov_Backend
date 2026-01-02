@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TekTrov.Application.DTOs.Wishlist;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Entities;
@@ -35,9 +36,17 @@ namespace TekTrov.Application.Services
             await _wishlistRepository.AddAsync(wishlist);
         }
 
-        public async Task<List<Wishlist>> GetWishlistAsync(int userId)
+        public async Task<List<WishlistItemResponseDTO>> GetWishlistAsync(int userId)
         {
-            return await _wishlistRepository.GetByUserIdAsync(userId);
+            var wishlists = await _wishlistRepository.GetByUserIdAsync(userId);
+
+            return wishlists.Select(w => new WishlistItemResponseDTO
+            {
+                ProductId = w.ProductId,
+                ProductName = w.Product!.Name,
+                Price = w.Product.Price,
+                ImageUrl = w.Product.ImageUrl
+            }).ToList();
         }
     }
 }

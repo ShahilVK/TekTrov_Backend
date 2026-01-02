@@ -1,4 +1,5 @@
-﻿using TekTrov.Application.Interfaces.Repositories;
+﻿using TekTrov.Application.DTOs.Cart;
+using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Entities;
 
@@ -19,7 +20,6 @@ public class CartService : ICartService
 
         if (cartItem != null)
         {
-            // ✅ Product already in cart → increase quantity
             cartItem.Quantity += 1;
             await _cartRepository.UpdateAsync(cartItem);
             return;
@@ -35,9 +35,17 @@ public class CartService : ICartService
         await _cartRepository.AddAsync(cart);
     }
 
-    public async Task<List<Cart>> GetCartAsync(int userId)
+    public async Task<List<CartItemResponseDTO>> GetCartAsync(int userId)
     {
-        return await _cartRepository.GetByUserIdAsync(userId);
+        var carts = await _cartRepository.GetByUserIdAsync(userId);
+
+        return carts.Select(c => new CartItemResponseDTO
+        {
+            ProductId = c.ProductId,
+            ProductName = c.Product!.Name,
+            Price = c.Product.Price,
+            Quantity = c.Quantity
+        }).ToList();
     }
 
     public async Task UpdateCartAsync(int userId, int productId, int quantity)

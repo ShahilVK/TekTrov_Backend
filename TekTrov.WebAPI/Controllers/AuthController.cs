@@ -65,9 +65,9 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         var userId = int.Parse(
-            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value
-        );
+     User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value
+ );
+
 
         await _userService.LogoutAsync(userId);
 

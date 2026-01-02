@@ -10,6 +10,7 @@ using TekTrov.Application.DTOs.Users;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Entities;
+using TekTrov.Domain.Enums;
 
 namespace TekTrov.Application.Services
 {
@@ -28,42 +29,8 @@ namespace TekTrov.Application.Services
 
 
 
-
-        //public async Task RegisterAsync(RegisterDTO dto)
-        //{
-        //    var name = dto.Name.Trim();
-        //    var email = dto.Email.Trim().ToLower();
-
-        //    if (string.IsNullOrWhiteSpace(name))
-        //        throw new Exception("Invalid name");
-
-        //    if (string.IsNullOrWhiteSpace(email))
-        //        throw new Exception("Invalid email");
-
-        //    var existingUser = await _userRepository.GetByEmailAsync(email);
-        //    if (existingUser != null)
-        //        throw new Exception("Email already registered");
-
-        //    var hashedPassword = BCrypt.Net.BCrypt.HashPassword(
-        //        dto.Password,
-        //        workFactor: 12   
-        //    );
-
-        //    var user = new User
-        //    {
-        //        Name = name,
-        //        Email = email,
-        //        Password = hashedPassword,
-        //        Role = "User"
-        //    };
-
-        //    await _userRepository.AddAsync(user);
-        //}
-
-
         public async Task RegisterAsync(RegisterDTO dto)
         {
-            // Final safety (NO helpers, NO trimming logic)
             if (dto.Name.StartsWith(" ") ||
                 dto.Email.StartsWith(" ") ||
                 dto.Password.StartsWith(" "))

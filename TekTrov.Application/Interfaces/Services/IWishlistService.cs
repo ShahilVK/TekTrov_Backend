@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TekTrov.Application.DTOs.Wishlist;
 using TekTrov.Domain.Entities;
 
 namespace TekTrov.Application.Interfaces.Services
@@ -11,6 +12,6 @@ namespace TekTrov.Application.Interfaces.Services
     {
         Task AddToWishlistAsync(int userId, int productId);
 
-        Task<List<Wishlist>> GetWishlistAsync(int userId);
+        Task<List<WishlistItemResponseDTO>> GetWishlistAsync(int userId);
     }
 }
