@@ -14,5 +14,7 @@ namespace TekTrov.Application.Interfaces.Repositories
         Task<Order?> GetByIdAsync(int orderId, int userId);
 
         Task AddAsync(Order order);
+
+        Task UpdateAsync(Order order);
     }
 }

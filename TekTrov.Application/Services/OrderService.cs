@@ -3,6 +3,7 @@ using TekTrov.Application.DTOs.Order;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Entities;
+using TekTrov.Domain.Enums;
 
 namespace TekTrov.Application.Services
 {
@@ -29,6 +30,7 @@ namespace TekTrov.Application.Services
                 Id = o.Id,
                 OrderDate = o.OrderDate,
                 TotalAmount = o.TotalAmount,
+                Status = o.Status.ToString(),
                 Items = o.OrderItems.Select(i => new OrderItemDTO
                 {
                     ProductId = i.ProductId,
@@ -89,6 +91,22 @@ namespace TekTrov.Application.Services
 
             await _orderRepository.AddAsync(order);
             await _cartRepository.RemoveRangeAsync(cartItems);
+        }
+
+
+        public async Task PayOrderAsync(int userId, int orderId)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId, userId);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (order.Status == OrderStatus.Paid)
+                throw new Exception("Order already paid");
+
+            order.Status = OrderStatus.Paid;
+
+            await _orderRepository.UpdateAsync(order);
         }
     }
 }
