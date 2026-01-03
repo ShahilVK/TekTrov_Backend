@@ -25,8 +25,7 @@ public class OrdersController : ControllerBase
             User.FindFirst(ClaimTypes.NameIdentifier)!.Value
         );
 
-        var orders = await _orderService.GetOrdersAsync(userId);
-        return Ok(orders);
+        return Ok(await _orderService.GetOrdersAsync(userId));
     }
 
     [HttpGet("{orderId:int}")]
@@ -36,9 +35,7 @@ public class OrdersController : ControllerBase
             User.FindFirst(ClaimTypes.NameIdentifier)!.Value
         );
 
-        var order = await _orderService
-            .GetOrderByIdAsync(orderId, userId);
-
+        var order = await _orderService.GetOrderByIdAsync(orderId, userId);
         if (order == null)
             return NotFound("Order not found");
 

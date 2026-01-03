@@ -17,8 +17,8 @@ namespace TekTrov.Domain.Entities
         public string Category { get; set; } = null!;
         public int Stock { get; set; }
 
-        public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
-        public ICollection<Cart> Carts { get; set; } = new List<Cart>();
+        //public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
+        //public ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
 
     }

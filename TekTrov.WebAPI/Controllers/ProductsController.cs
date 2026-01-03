@@ -70,7 +70,7 @@ namespace TekTrov.WebApi.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        [HttpPost]
+        [HttpPost("Admin-add-products")]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO dto)
         {
             if (!ModelState.IsValid)

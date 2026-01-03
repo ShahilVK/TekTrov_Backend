@@ -12,6 +12,10 @@ namespace TekTrov.Application.Interfaces.Services
     {
         Task AddToWishlistAsync(int userId, int productId);
 
+        Task<bool> ToggleWishlistAsync(int userId, int productId);
+
         Task<List<WishlistItemResponseDTO>> GetWishlistAsync(int userId);
+
+        Task RemoveFromWishlistAsync(int userId, int productId);
     }
 }

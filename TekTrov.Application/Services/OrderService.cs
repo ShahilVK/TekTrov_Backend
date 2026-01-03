@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TekTrov.Application.DTOs.Order;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Entities;
@@ -23,21 +24,49 @@ namespace TekTrov.Application.Services
             _orderRepository = orderRepository;
         }
 
-        public async Task<List<Order>> GetOrdersAsync(int userId)
+        public async Task<List<OrderDTO>> GetOrdersAsync(int userId)
         {
-            return await _orderRepository.GetByUserIdAsync(userId);
+            var orders = await _orderRepository.GetByUserIdAsync(userId);
+
+            return orders.Select(o => new OrderDTO
+            {
+                Id = o.Id,
+                OrderDate = o.OrderDate,
+                TotalAmount = o.TotalAmount,
+                Items = o.OrderItems.Select(i => new OrderItemDTO
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product!.Name,
+                    Price = i.Price,
+                    Quantity = i.Quantity
+                }).ToList()
+            }).ToList();
         }
 
-        public async Task<Order?> GetOrderByIdAsync(int orderId, int userId)
+        public async Task<OrderDTO?> GetOrderByIdAsync(int orderId, int userId)
         {
-            return await _orderRepository.GetByIdAsync(orderId, userId);
+            var order = await _orderRepository.GetByIdAsync(orderId, userId);
+            if (order == null) return null;
+
+            return new OrderDTO
+            {
+                Id = order.Id,
+                OrderDate = order.OrderDate,
+                TotalAmount = order.TotalAmount,
+                Items = order.OrderItems.Select(i => new OrderItemDTO
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.Product!.Name,
+                    Price = i.Price,
+                    Quantity = i.Quantity
+                }).ToList()
+            };
         }
 
         public async Task PlaceOrderAsync(int userId)
         {
             var cartItems = await _cartRepository.GetByUserIdAsync(userId);
-
-            if (cartItems.Count == 0)
+            if (!cartItems.Any())
                 throw new Exception("Cart is empty");
 
             var order = new Order
@@ -50,22 +79,19 @@ namespace TekTrov.Application.Services
 
             foreach (var item in cartItems)
             {
-                var orderItem = new OrderItem
+                order.OrderItems.Add(new OrderItem
                 {
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
                     Price = item.Product!.Price
-                };
+                });
 
-                total += orderItem.Price * orderItem.Quantity;
-                order.OrderItems.Add(orderItem);
+                total += item.Product.Price * item.Quantity;
             }
 
             order.TotalAmount = total;
 
             await _orderRepository.AddAsync(order);
-
-            // ✅ Clear cart after successful checkout
             await _cartRepository.RemoveRangeAsync(cartItems);
         }
     }

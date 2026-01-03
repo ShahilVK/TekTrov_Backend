@@ -19,6 +19,29 @@ namespace TekTrov.Application.Services
             _wishlistRepository = wishlistRepository;
         }
 
+        public async Task<bool> ToggleWishlistAsync(int userId, int productId)
+        {
+            var existing = await _wishlistRepository
+                .GetAsync(userId, productId);
+
+            // ❌ Exists → Remove
+            if (existing != null)
+            {
+                await _wishlistRepository.RemoveAsync(existing);
+                return false; // removed
+            }
+
+            // ✅ Not exists → Add
+            var wishlist = new Wishlist
+            {
+                UserId = userId,
+                ProductId = productId
+            };
+
+            await _wishlistRepository.AddAsync(wishlist);
+            return true; // added
+        }
+
         public async Task AddToWishlistAsync(int userId, int productId)
         {
             var existing = await _wishlistRepository
@@ -47,6 +70,16 @@ namespace TekTrov.Application.Services
                 Price = w.Product.Price,
                 ImageUrl = w.Product.ImageUrl
             }).ToList();
+        }
+
+        public async Task RemoveFromWishlistAsync(int userId, int productId)
+        {
+            var wishlistItem = await _wishlistRepository.GetAsync(userId, productId);
+
+            if (wishlistItem == null)
+                throw new Exception("Wishlist item not found");
+
+            await _wishlistRepository.RemoveAsync(wishlistItem);
         }
     }
 }

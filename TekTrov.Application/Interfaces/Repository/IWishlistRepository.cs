@@ -13,5 +13,7 @@ namespace TekTrov.Application.Interfaces.Repositories
         Task AddAsync(Wishlist wishlist);
 
         Task<List<Wishlist>> GetByUserIdAsync(int userId);
+
+        Task RemoveAsync(Wishlist wishlist);
     }
 }

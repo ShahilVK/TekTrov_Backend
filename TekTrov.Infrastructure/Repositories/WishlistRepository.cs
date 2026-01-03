@@ -40,6 +40,12 @@ namespace TekTrov.Infrastructure.Repositories
                 .Where(w => w.UserId == userId)
                 .ToListAsync();
         }
+
+        public async Task RemoveAsync(Wishlist wishlist)
+        {
+            _context.Wishlists.Remove(wishlist);
+            await _context.SaveChangesAsync();
+        }
     }
 
 }
