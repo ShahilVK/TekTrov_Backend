@@ -108,5 +108,32 @@ namespace TekTrov.Application.Services
                 CreatedOn = user.CreatedOn
             };
         }
+
+        public async Task<AuthResponseDTO> RefreshTokenAsync(string refreshToken)
+        {
+            var user = await _userRepository.GetByRefreshTokenAsync(refreshToken);
+
+            if (user == null)
+                throw new Exception("Invalid or expired refresh token");
+
+            // 🔑 Generate new tokens
+            var newAccessToken = _jwtService.GenerateAccessToken(
+                user.Id, user.Email, user.Role
+            );
+
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            await _userRepository.UpdateAsync(user);
+
+            return new AuthResponseDTO
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            };
+        }
+
     }
 }

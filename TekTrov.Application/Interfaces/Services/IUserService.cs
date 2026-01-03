@@ -12,6 +12,8 @@ namespace TekTrov.Application.Interfaces.Services
     {
         Task RegisterAsync(RegisterDTO dto);
         Task<AuthResponseDTO> LoginAsync(LoginDTO dto);
+
+        Task<AuthResponseDTO> RefreshTokenAsync(string refreshToken);
         Task LogoutAsync(int userId);
 
         Task<UserResponseDTO?> GetUserByIdAsync(int id);

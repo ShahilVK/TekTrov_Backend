@@ -12,7 +12,6 @@ namespace TekTrov.Application.Common
         public string Message { get; private set; } = string.Empty;
         public T? Data { get; private set; }
 
-        // ✅ Success response
         public static ApiResponse<T> SuccessResponse(
             T? data,
             string message,
@@ -21,12 +20,11 @@ namespace TekTrov.Application.Common
             return new ApiResponse<T>
             {
                 StatusCode = statusCode,
-                Message = message,
+                Message = message,  
                 Data = data
             };
         }
 
-        // ❌ Failure response
         public static ApiResponse<T> FailureResponse(
             string message,
             int statusCode = 400)

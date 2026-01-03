@@ -36,8 +36,8 @@ public class CartController : ControllerBase
 
         await _cartService.AddToCartAsync(userId, productId);
 
-        return Ok(ApiResponse<object>.SuccessResponse(
-            null,
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
             "Product added to cart"
         ));
     }

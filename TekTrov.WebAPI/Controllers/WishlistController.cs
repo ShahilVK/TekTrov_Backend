@@ -28,24 +28,14 @@ public class WishlistController : ControllerBase
         var added = await _wishlistService
             .ToggleWishlistAsync(userId, productId);
 
-        return Ok(ApiResponse<object>.SuccessResponse(
-            null,
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            added,
             added
                 ? "Product added to wishlist"
                 : "Product removed from wishlist"
         ));
     }
 
-    //[HttpPost("{productId:int}")]
-    //public async Task<IActionResult> AddToWishlist(int productId)
-    //{
-    //    var userId = int.Parse(
-    //        User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-    //    );
-
-    //    await _wishlistService.AddToWishlistAsync(userId, productId);
-    //    return Ok("Product added to wishlist");
-    //}
 
     [HttpGet]
     public async Task<IActionResult> GetWishlist()

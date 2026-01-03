@@ -76,4 +76,25 @@ public class AuthController : ControllerBase
                 null,
                 "Logout successful"));
     }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDTO dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+            return BadRequest(
+                ApiResponse<object>.FailureResponse(
+                    "Refresh token is required", 400
+                )
+            );
+
+        var result = await _userService.RefreshTokenAsync(dto.RefreshToken);
+
+        return Ok(
+            ApiResponse<AuthResponseDTO>.SuccessResponse(
+                result,
+                "Token refreshed successfully"
+            )
+        );
+    }
+
 }
