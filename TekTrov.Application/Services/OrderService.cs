@@ -1,112 +1,112 @@
 ﻿
-using TekTrov.Application.DTOs.Order;
-using TekTrov.Application.Interfaces.Repositories;
-using TekTrov.Application.Interfaces.Services;
-using TekTrov.Domain.Entities;
-using TekTrov.Domain.Enums;
+//using TekTrov.Application.DTOs.Order;
+//using TekTrov.Application.Interfaces.Repositories;
+//using TekTrov.Application.Interfaces.Services;
+//using TekTrov.Domain.Entities;
+//using TekTrov.Domain.Enums;
 
-namespace TekTrov.Application.Services
-{
-    public class OrderService : IOrderService
-    {
-        private readonly IOrderRepository _orderRepository;
-        private readonly ICartRepository _cartRepository;
-
-
-        public OrderService(
-        ICartRepository cartRepository,
-        IOrderRepository orderRepository)
-        {
-            _cartRepository = cartRepository;
-            _orderRepository = orderRepository;
-        }
-
-        public async Task<List<OrderDTO>> GetOrdersAsync(int userId)
-        {
-            var orders = await _orderRepository.GetByUserIdAsync(userId);
-
-            return orders.Select(o => new OrderDTO
-            {
-                Id = o.Id,
-                OrderDate = o.OrderDate,
-                TotalAmount = o.TotalAmount,
-                Status = o.Status.ToString(),
-                Items = o.OrderItems.Select(i => new OrderItemDTO
-                {
-                    ProductId = i.ProductId,
-                    ProductName = i.Product!.Name,
-                    Price = i.Price,
-                    Quantity = i.Quantity
-                }).ToList()
-            }).ToList();
-        }
-
-        public async Task<OrderDTO?> GetOrderByIdAsync(int orderId, int userId)
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId, userId);
-            if (order == null) return null;
-
-            return new OrderDTO
-            {
-                Id = order.Id,
-                OrderDate = order.OrderDate,
-                TotalAmount = order.TotalAmount,
-                Items = order.OrderItems.Select(i => new OrderItemDTO
-                {
-                    ProductId = i.ProductId,
-                    ProductName = i.Product!.Name,
-                    Price = i.Price,
-                    Quantity = i.Quantity
-                }).ToList()
-            };
-        }
-
-        public async Task PlaceOrderAsync(int userId)
-        {
-            var cartItems = await _cartRepository.GetByUserIdAsync(userId);
-            if (!cartItems.Any())
-                throw new Exception("Cart is empty");
-
-            var order = new Order
-            {
-                UserId = userId,
-                OrderDate = DateTime.UtcNow
-            };
-
-            decimal total = 0;
-
-            foreach (var item in cartItems)
-            {
-                order.OrderItems.Add(new OrderItem
-                {
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    Price = item.Product!.Price
-                });
-
-                total += item.Product.Price * item.Quantity;
-            }
-
-            order.TotalAmount = total;
-
-            await _orderRepository.AddAsync(order);
-            await _cartRepository.RemoveRangeAsync(cartItems);
-        }
+//namespace TekTrov.Application.Services
+//{
+//    public class OrderService : IOrderService
+//    {
+//        private readonly IOrderRepository _orderRepository;
+//        private readonly ICartRepository _cartRepository;
 
 
-        public async Task PayOrderAsync(int userId, int orderId)
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId, userId);
+//        public OrderService(
+//        ICartRepository cartRepository,
+//        IOrderRepository orderRepository)
+//        {
+//            _cartRepository = cartRepository;
+//            _orderRepository = orderRepository;
+//        }
 
-            if (order == null)
-                throw new Exception("Order not found");
+//        public async Task<List<OrderDTO>> GetOrdersAsync(int userId)
+//        {
+//            var orders = await _orderRepository.GetByUserIdAsync(userId);
 
-            if (order.Status == OrderStatus.Paid)
-                throw new Exception("Order already paid");
+//            return orders.Select(o => new OrderDTO
+//            {
+//                Id = o.Id,
+//                OrderDate = o.OrderDate,
+//                TotalAmount = o.TotalAmount,
+//                Status = o.Status.ToString(),
+//                Items = o.OrderItems.Select(i => new OrderItemDTO
+//                {
+//                    ProductId = i.ProductId,
+//                    ProductName = i.Product!.Name,
+//                    Price = i.Price,
+//                    Quantity = i.Quantity
+//                }).ToList()
+//            }).ToList();
+//        }
 
-            order.Status = OrderStatus.Paid;
+//        public async Task<OrderDTO?> GetOrderByIdAsync(int orderId, int userId)
+//        {
+//            var order = await _orderRepository.GetByIdAsync(orderId, userId);
+//            if (order == null) return null;
 
-            await _orderRepository.UpdateAsync(order);
-        }
-    }
-}
+//            return new OrderDTO
+//            {
+//                Id = order.Id,
+//                OrderDate = order.OrderDate,
+//                TotalAmount = order.TotalAmount,
+//                Items = order.OrderItems.Select(i => new OrderItemDTO
+//                {
+//                    ProductId = i.ProductId,
+//                    ProductName = i.Product!.Name,
+//                    Price = i.Price,
+//                    Quantity = i.Quantity
+//                }).ToList()
+//            };
+//        }
+
+//        public async Task PlaceOrderAsync(int userId)
+//        {
+//            var cartItems = await _cartRepository.GetByUserIdAsync(userId);
+//            if (!cartItems.Any())
+//                throw new Exception("Cart is empty");
+
+//            var order = new Order
+//            {
+//                UserId = userId,
+//                OrderDate = DateTime.UtcNow
+//            };
+
+//            decimal total = 0;
+
+//            foreach (var item in cartItems)
+//            {
+//                order.OrderItems.Add(new OrderItem
+//                {
+//                    ProductId = item.ProductId,
+//                    Quantity = item.Quantity,
+//                    Price = item.Product!.Price
+//                });
+
+//                total += item.Product.Price * item.Quantity;
+//            }
+
+//            order.TotalAmount = total;
+
+//            await _orderRepository.AddAsync(order);
+//            await _cartRepository.RemoveRangeAsync(cartItems);
+//        }
+
+
+//        public async Task PayOrderAsync(int userId, int orderId)
+//        {
+//            var order = await _orderRepository.GetByIdAsync(orderId, userId);
+
+//            if (order == null)
+//                throw new Exception("Order not found");
+
+//            if (order.Status == OrderStatus.Paid)
+//                throw new Exception("Order already paid");
+
+//            order.Status = OrderStatus.Paid;
+
+//            await _orderRepository.UpdateAsync(order);
+//        }
+//    }
+//}

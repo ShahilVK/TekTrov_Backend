@@ -1,16 +1,9 @@
-﻿using BCrypt.Net;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TekTrov.Application.DTOs.Auth;
-using TekTrov.Application.DTOs.Auth;
+﻿using TekTrov.Application.DTOs.Auth;
 using TekTrov.Application.DTOs.Users;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Entities;
-using TekTrov.Domain.Enums;
+
 
 namespace TekTrov.Application.Services
 {
@@ -116,7 +109,6 @@ namespace TekTrov.Application.Services
             if (user == null)
                 throw new Exception("Invalid or expired refresh token");
 
-            // 🔑 Generate new tokens
             var newAccessToken = _jwtService.GenerateAccessToken(
                 user.Id, user.Email, user.Role
             );
@@ -136,4 +128,5 @@ namespace TekTrov.Application.Services
         }
 
     }
+
 }

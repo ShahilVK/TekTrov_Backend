@@ -1,12 +1,6 @@
 ﻿using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TekTrov.Domain.Entities;
-using TekTrov.Domain.Enums;
 
 namespace TekTrov.Infrastructure.Data
 {
@@ -32,7 +26,6 @@ namespace TekTrov.Infrastructure.Data
             }
             else
             {
-                // 🔥 FORCE ADMIN ROLE (fixes 403 forever)
                 admin.Role = "Admin";
             }
 

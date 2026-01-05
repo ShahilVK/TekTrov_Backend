@@ -64,8 +64,8 @@ public class WishlistController : ControllerBase
 
         await _wishlistService.RemoveFromWishlistAsync(userId, productId);
 
-        return Ok(ApiResponse<object>.SuccessResponse(
-            null,
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
             "Product removed from wishlist"
         ));
     }

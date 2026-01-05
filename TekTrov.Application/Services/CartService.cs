@@ -8,18 +8,33 @@ namespace TekTrov.Application.Services;
 public class CartService : ICartService
 {
     private readonly ICartRepository _cartRepository;
+    private readonly IProductRepository _productRepository;
 
-    public CartService(ICartRepository cartRepository)
+    public CartService(
+        ICartRepository cartRepository,
+        IProductRepository productRepository)
     {
         _cartRepository = cartRepository;
+        _productRepository = productRepository;
     }
 
     public async Task AddToCartAsync(int userId, int productId)
     {
+        var product = await _productRepository.GetByIdAsync(productId);
+
+        if (product == null)
+            throw new Exception("Product not found");
+
+        if (product.Stock <= 0)
+            throw new Exception("Product is out of stock");
+
         var cartItem = await _cartRepository.GetAsync(userId, productId);
 
         if (cartItem != null)
         {
+            if (cartItem.Quantity + 1 > product.Stock)
+                throw new Exception($"Only {product.Stock} items available in stock");
+
             cartItem.Quantity += 1;
             await _cartRepository.UpdateAsync(cartItem);
             return;
@@ -55,11 +70,19 @@ public class CartService : ICartService
         if (cartItem == null)
             throw new Exception("Cart item not found");
 
+        var product = await _productRepository.GetByIdAsync(productId);
+
+        if (product == null)
+            throw new Exception("Product not found");
+
         if (quantity <= 0)
         {
             await _cartRepository.RemoveAsync(cartItem);
             return;
         }
+
+        if (quantity > product.Stock)
+            throw new Exception($"Only {product.Stock} items available in stock");
 
         cartItem.Quantity = quantity;
         await _cartRepository.UpdateAsync(cartItem);

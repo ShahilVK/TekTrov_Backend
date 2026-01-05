@@ -22,7 +22,7 @@ namespace TekTrov.Application.DTOs.Products
         public decimal Price { get; set; }
 
         [Required]
-        //[RegularExpression(@"^(?!\s)[A-Za-z ]{2,50}$")]
+       
         public string Category { get; set; } = null!;
 
         [Range(0, 10000)]

@@ -80,8 +80,8 @@ namespace TekTrov.WebApi.Controllers
 
             return StatusCode(
                201,
-               ApiResponse<object>.SuccessResponse(
-                   null,
+               ApiResponse<bool>.SuccessResponse(
+                   true,
                    "Product created successfully",
                    201
                ));

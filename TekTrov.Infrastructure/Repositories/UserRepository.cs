@@ -1,10 +1,5 @@
 ﻿using ECommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Domain.Entities;
 
@@ -19,8 +14,6 @@ namespace TekTrov.Infrastructure.Repositories
             _context = context;
         }
 
-        //public async Task<User> GetByEmailAsync(string email) =>
-        //    await _context.Users.SingleOrDefaultAsync(x => x.Email == email);
 
         public async Task<User?> GetByEmailAsync(string email)
         {

@@ -34,8 +34,8 @@ public class AuthController : ControllerBase
         await _userService.RegisterAsync(dto);
 
         return StatusCode(201,
-    ApiResponse<object>.SuccessResponse(
-        null,
+    ApiResponse<bool>.SuccessResponse(
+        true,
         "User registered successfully",
         201
     ));
@@ -72,8 +72,8 @@ public class AuthController : ControllerBase
         await _userService.LogoutAsync(userId);
 
         return Ok(
-            ApiResponse<object>.SuccessResponse(
-                null,
+            ApiResponse<bool>.SuccessResponse(
+                true,
                 "Logout successful"));
     }
 

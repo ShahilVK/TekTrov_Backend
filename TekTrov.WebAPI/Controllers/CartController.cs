@@ -71,8 +71,8 @@ public class CartController : ControllerBase
         await _cartService.UpdateCartAsync(
             userId, productId, dto.Quantity);
 
-        return Ok(ApiResponse<object>.SuccessResponse(
-            null,
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
             "Cart updated successfully"
         ));
     }
@@ -86,8 +86,8 @@ public class CartController : ControllerBase
 
         await _cartService.RemoveFromCartAsync(userId, productId);
 
-        return Ok(ApiResponse<object>.SuccessResponse(
-            null,
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
             "Product removed from cart"
         ));
     }
