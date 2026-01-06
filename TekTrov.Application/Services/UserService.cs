@@ -61,6 +61,9 @@ namespace TekTrov.Application.Services
                 !BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
                 throw new Exception("Invalid email or password");
 
+            if (user.IsBlocked)
+                throw new Exception("Your account has been blocked by admin");
+
             var accessToken = _jwtService.GenerateAccessToken(
                 user.Id, user.Email, user.Role);
 
@@ -77,6 +80,7 @@ namespace TekTrov.Application.Services
                 RefreshToken = refreshToken
             };
         }
+
 
         public async Task LogoutAsync(int userId)
         {
@@ -125,6 +129,31 @@ namespace TekTrov.Application.Services
                 AccessToken = newAccessToken,
                 RefreshToken = newRefreshToken
             };
+        }
+
+
+        public async Task BlockUserAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new Exception("User not found");
+
+            if (user.IsBlocked)
+                throw new Exception("User already blocked");
+
+            user.IsBlocked = true;
+            await _userRepository.UpdateAsync(user);
+        }
+
+        public async Task UnblockUserAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new Exception("User not found");
+
+            if (!user.IsBlocked)
+                throw new Exception("User already unblocked");
+
+            user.IsBlocked = false;
+            await _userRepository.UpdateAsync(user);
         }
 
     }

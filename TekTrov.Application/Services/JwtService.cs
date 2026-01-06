@@ -22,12 +22,10 @@ namespace TekTrov.Application.Services
         {
             var claims = new List<Claim>
         {
-            // 🔑 MUST USE ClaimTypes.NameIdentifier
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
 
             new Claim(JwtRegisteredClaimNames.Email, email),
 
-            // 🔑 MUST USE ClaimTypes.Role
             new Claim(ClaimTypes.Role, role)
         };
 

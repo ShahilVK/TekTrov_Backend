@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+
 using TekTrov.Application.DTOs.Products;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
@@ -34,10 +31,11 @@ namespace TekTrov.Application.Services
             return await _productRepository.GetByCategoryAsync(category);
         }
 
-        public async Task CreateProductAsync(CreateProductDTO dto)
+        public async Task CreateProductAsync(
+            CreateProductDTO dto,
+            string? imageUrl)
         {
-            if (dto.Name.StartsWith(" ") ||
-                dto.Category.StartsWith(" "))
+            if (dto.Name.StartsWith(" ") || dto.Category.StartsWith(" "))
                 throw new Exception("Leading spaces are not allowed");
 
             var product = new Product
@@ -46,10 +44,25 @@ namespace TekTrov.Application.Services
                 Description = dto.Description,
                 Price = dto.Price,
                 Category = dto.Category.ToLower(),
-                Stock = dto.Stock
+                Stock = dto.Stock,
+                ImageUrl = imageUrl
             };
 
             await _productRepository.AddAsync(product);
         }
+
+
+        public async Task UpdateStockAsync(int productId, int stock)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (product == null)
+                throw new Exception("Product not found");
+
+            product.Stock = stock;
+
+            await _productRepository.UpdateAsync(product);
+        }
+
     }
 }

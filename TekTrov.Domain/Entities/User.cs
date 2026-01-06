@@ -13,12 +13,14 @@ namespace TekTrov.Domain.Entities
         public string Password { get; set; } = null!; // hashed
         public string Role { get; set; } = "User";
 
+        public bool IsBlocked { get; set; } = false;
+
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
         public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
         public ICollection<Cart> Carts { get; set; } = new List<Cart>();
-        //public ICollection<Order> Orders { get; set; } = new List<Order>();
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 
 }

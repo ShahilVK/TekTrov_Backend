@@ -32,8 +32,8 @@ namespace TekTrov.Application.DTOs.Auth
         [Required(ErrorMessage = "Email is required")]
         [MaxLength(150, ErrorMessage = "Email cannot exceed 150 characters")]
         [RegularExpression(
-    @"^(?!example@)(?!test@)(?!demo@)(?!admin@)(?!user@)[a-z0-9]+([._%+-][a-z0-9]+)*@[a-z0-9-]+\.(com|in|net|org|co|edu)$",
-    ErrorMessage = "Email must be a valid real domain (.com, .in, .net, .org, .co, .edu)"
+    @"^(?!example@)(?!test@)(?!demo@)(?!admin@)(?!user@)[a-z0-9]+([._%+-][a-z0-9]+)*@[a-z0-9-]+\.(com)$",
+    ErrorMessage = "Email must be a valid real domain (.com)"
     )]
         public string Email { get; set; } = null!;
 

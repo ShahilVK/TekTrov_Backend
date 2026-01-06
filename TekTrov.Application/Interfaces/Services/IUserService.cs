@@ -17,5 +17,8 @@ namespace TekTrov.Application.Interfaces.Services
         Task LogoutAsync(int userId);
 
         Task<UserResponseDTO?> GetUserByIdAsync(int id);
+
+        Task BlockUserAsync(int userId);
+        Task UnblockUserAsync(int userId);
     }
 }

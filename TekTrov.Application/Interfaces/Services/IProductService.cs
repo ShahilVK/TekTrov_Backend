@@ -14,7 +14,8 @@ namespace TekTrov.Application.Interfaces.Services
         Task<Product?> GetProductByIdAsync(int id);
 
         Task<List<Product>> GetProductsByCategoryAsync(string category);
-        
-        Task CreateProductAsync(CreateProductDTO dto);
+        Task UpdateStockAsync(int productId, int stock);
+
+        Task CreateProductAsync(CreateProductDTO dto, string? imageUrl);
     }
 }

@@ -1,33 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace TekTrov.Application.DTOs.Products
+namespace TekTrov.WebApi.DTOs.Products
 {
-    public class CreateProductDTO
+    public class CreateProductRequest
     {
         [Required]
-        [MaxLength(100)]
         public string Name { get; set; } = null!;
 
         [Required]
-        [MinLength(5)]
-        [MaxLength(500)]
         public string Description { get; set; } = null!;
 
-        [Range(1, 10000)]
+        [Range(1, 1000000)]
         public decimal Price { get; set; }
 
         [Required]
-       
         public string Category { get; set; } = null!;
 
         [Range(0, 10000)]
         public int Stock { get; set; }
 
-       
+        public IFormFile? Image { get; set; }
     }
 }

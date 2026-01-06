@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TekTrov.Application.DTOs;
@@ -13,6 +12,10 @@ using TekTrov.Application.Interfaces.Services;
 using TekTrov.Application.Services;
 using TekTrov.Infrastructure.Data;
 using TekTrov.Infrastructure.Repositories;
+using TekTrov.Infrastructure.Services;
+using CloudinaryDotNet;
+using TekTrov.Application.Common;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,8 +81,12 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
 
-//builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-//builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddScoped<IImageService, CloudinaryImageService>();
+
+
 
 // --------------------
 // Authentication (JWT)
@@ -169,6 +176,26 @@ builder.Services.AddAuthorization(options =>
 });
 
 
+var cloudinarySettings = builder.Configuration
+    .GetSection("Cloudinary")
+    .Get<CloudinarySettings>()
+    ?? throw new Exception("Cloudinary settings missing");
+
+
+var account = new Account(
+    cloudinarySettings.CloudName,
+    cloudinarySettings.ApiKey,
+    cloudinarySettings.ApiSecret
+);
+
+
+
+var cloudinary = new Cloudinary(account)
+{
+    Api = { Secure = true }
+};
+
+builder.Services.AddSingleton(cloudinary);
 
 var app = builder.Build();
 
@@ -183,6 +210,8 @@ if (app.Environment.IsDevelopment())
     await context.Database.MigrateAsync();
     await DbInitializer.SeedAdminAsync(context);
 }
+app.UseStaticFiles(); // ✅ REQUIRED FOR IMAGE ACCESS
+
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

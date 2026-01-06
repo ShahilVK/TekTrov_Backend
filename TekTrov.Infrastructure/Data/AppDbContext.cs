@@ -20,8 +20,8 @@ namespace ECommerce.Infrastructure.Data
 
         public DbSet<Cart> Carts { get; set; }
 
-        //public DbSet<Order> Orders { get; set; }
-        //public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
 
 
@@ -33,13 +33,13 @@ namespace ECommerce.Infrastructure.Data
                 .Property(p => p.Price)
                 .HasPrecision(18, 2);
 
-       //     modelBuilder.Entity<OrderItem>()
-       //    .Property(oi => oi.Price)
-       //    .HasPrecision(18, 2);
+            modelBuilder.Entity<OrderItem>()
+           .Property(oi => oi.Price)
+           .HasPrecision(18, 2);
 
-       //     modelBuilder.Entity<Order>()
-       //.Property(o => o.TotalAmount)
-       //.HasPrecision(18, 2);
+            modelBuilder.Entity<Order>()
+       .Property(o => o.TotalAmount)
+       .HasPrecision(18, 2);
 
             modelBuilder.Entity<User>()
         .HasIndex(u => u.Email)

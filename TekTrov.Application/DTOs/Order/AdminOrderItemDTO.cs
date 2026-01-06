@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TekTrov.Application.DTOs.Order
+﻿namespace TekTrov.Application.DTOs.Order
 {
-    public class OrderItemDTO
+    public class AdminOrderItemDTO
     {
         public int ProductId { get; set; }
         public string ProductName { get; set; } = null!;

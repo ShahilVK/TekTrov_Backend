@@ -4,6 +4,7 @@ using TekTrov.Application.Common;
 using TekTrov.Application.DTOs.Products;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Enums;
+using TekTrov.WebApi.DTOs.Products;
 
 namespace TekTrov.WebApi.Controllers
 {
@@ -13,10 +14,14 @@ namespace TekTrov.WebApi.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly IImageService _imageService;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(
+        IProductService productService,
+        IImageService imageService)
         {
             _productService = productService;
+            _imageService = imageService;
         }
 
         [HttpGet]
@@ -71,20 +76,48 @@ namespace TekTrov.WebApi.Controllers
 
         [Authorize(Roles = Roles.Admin)]
         [HttpPost("Admin-add-products")]
-        public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO dto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateProduct([FromForm] CreateProductRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ApiResponse<object>.FailureResponse("Validation failed", 400));
+            string? imageUrl = null;
 
-            await _productService.CreateProductAsync(dto);
+            if (request.Image != null)
+            {
+                imageUrl = await _imageService.UploadAsync(
+                    request.Image.OpenReadStream(),
+                    request.Image.FileName,
+                    "products"
+                );
+            }
 
-            return StatusCode(
-               201,
-               ApiResponse<bool>.SuccessResponse(
-                   true,
-                   "Product created successfully",
-                   201
-               ));
+            var dto = new CreateProductDTO
+            {
+                Name = request.Name,
+                Description = request.Description,
+                Price = request.Price,
+                Category = request.Category,
+                Stock = request.Stock
+            };
+
+            await _productService.CreateProductAsync(dto, imageUrl);
+
+            return StatusCode(201,
+                ApiResponse<bool>.SuccessResponse(true, "Product created successfully", 201)
+            );
         }
+
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPut("{productId:int}/stock")]
+        public async Task<IActionResult> UpdateStock(int productId,[FromBody] UpdateProductStockDTO dto)
+        {
+            await _productService.UpdateStockAsync(productId, dto.Stock);
+
+            return Ok(ApiResponse<bool>.SuccessResponse(
+                true,
+                "Product stock updated successfully"
+            ));
+        }
+
     }
 }

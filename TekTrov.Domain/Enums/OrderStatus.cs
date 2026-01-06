@@ -8,8 +8,10 @@ namespace TekTrov.Domain.Enums
 {
     public enum OrderStatus
     {
-        Pending,
-        Paid,
-        Cancelled
+        Pending =1 ,
+        Paid = 2,
+        Shipped = 3,
+        Delivered = 4,
+        Cancelled = 5
     }
 }
