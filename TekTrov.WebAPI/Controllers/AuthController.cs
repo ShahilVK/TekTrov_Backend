@@ -50,10 +50,18 @@ public class AuthController : ControllerBase
     {
         var result = await _userService.LoginAsync(dto);
 
-        return Ok(
-            ApiResponse<object>.SuccessResponse(
-                result,
-                "Login successful"));
+        HttpContext.Session.SetString(
+       "RefreshToken",
+       result.RefreshToken
+   );
+
+        return Ok(ApiResponse<object>.SuccessResponse(
+       new
+       {
+           accessToken = result.AccessToken
+       },
+       "Login successful"
+   ));
     }
 
 
@@ -64,12 +72,7 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        var userId = int.Parse(
-     User.FindFirst(JwtRegisteredClaimNames.Sub)!.Value
- );
-
-
-        await _userService.LogoutAsync(userId);
+        HttpContext.Session.Clear();
 
         return Ok(
             ApiResponse<bool>.SuccessResponse(
@@ -78,23 +81,103 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDTO dto)
+    public async Task<IActionResult> RefreshToken()
     {
-        if (string.IsNullOrWhiteSpace(dto.RefreshToken))
-            return BadRequest(
-                ApiResponse<object>.FailureResponse(
-                    "Refresh token is required", 400
-                )
-            );
+        var refreshToken =
+            HttpContext.Session.GetString("RefreshToken");
 
-        var result = await _userService.RefreshTokenAsync(dto.RefreshToken);
+        if (string.IsNullOrEmpty(refreshToken))
+            return Unauthorized(ApiResponse<object>.FailureResponse(
+                "Session expired", 401));
 
-        return Ok(
-            ApiResponse<AuthResponseDTO>.SuccessResponse(
-                result,
-                "Token refreshed successfully"
-            )
+        var result =
+            await _userService.RefreshTokenAsync(refreshToken);
+
+        HttpContext.Session.SetString(
+            "RefreshToken",
+            result.RefreshToken
         );
+
+        return Ok(ApiResponse<object>.SuccessResponse(
+            new
+            {
+                accessToken = result.AccessToken
+            },
+            "Token refreshed"
+        ));
     }
+
+
+    //[HttpPost("forgot-password")]
+    //public async Task<IActionResult> ForgotPassword(
+    //[FromBody] ForgotPasswordDTO dto)
+    //{
+    //    if (!ModelState.IsValid)
+    //        return BadRequest(ApiResponse<object>.FailureResponse(
+    //            "Invalid email", 400));
+
+    //    await _userService.ForgotPasswordAsync(dto);
+
+    //    return Ok(ApiResponse<bool>.SuccessResponse(
+    //        true,
+    //        "If the email exists, a reset link has been sent"
+    //    ));
+    //}
+
+    [HttpPost("password/reset")]
+    public async Task<IActionResult> ResetPasswordWithOtp(
+     [FromBody] ResetPasswordWithOtpDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.FailureResponse(
+                "Invalid data", 400));
+
+        await _userService.ResetPasswordWithOtpAsync(dto);
+
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
+            "Password reset successful"
+        ));
+    }
+
+
+    [HttpPost("password/send-otp")]
+    public async Task<IActionResult> SendPasswordOtp(
+     [FromBody] SendPasswordOtpDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.FailureResponse(
+                "Invalid email", 400));
+
+        await _userService.SendPasswordOtpAsync(dto);
+
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
+            "If email exists, OTP has been sent"
+        ));
+    }
+
+
+
+
+    //[HttpPost("verify-email-otp")]
+    //public async Task<IActionResult> VerifyEmailOtp(
+    //[FromBody] VerifyOtpDTO dto)
+    //{
+    //    if (!ModelState.IsValid)
+    //        return BadRequest(ApiResponse<object>.FailureResponse(
+    //            "Invalid data", 400));
+
+    //    await _userService.VerifyEmailOtpAsync(dto);
+
+    //    return Ok(ApiResponse<bool>.SuccessResponse(
+    //        true,
+    //        "Email verified successfully"
+    //    ));
+    //}
+
+
+
+
 
 }

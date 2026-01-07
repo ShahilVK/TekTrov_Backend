@@ -11,13 +11,16 @@ namespace TekTrov.Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IJwtService _jwtService;
+        private readonly IEmailService _emailService;
 
         public UserService(
-            IUserRepository userRepository,
-            IJwtService jwtService)
+     IUserRepository userRepository,
+     IJwtService jwtService,
+     IEmailService emailService)
         {
             _userRepository = userRepository;
             _jwtService = jwtService;
+            _emailService = emailService;
         }
 
 
@@ -155,6 +158,105 @@ namespace TekTrov.Application.Services
             user.IsBlocked = false;
             await _userRepository.UpdateAsync(user);
         }
+
+        public async Task ChangePasswordAsync(int userId, ChangePasswordDTO dto)
+        {
+            if (dto.NewPassword.StartsWith(" "))
+                throw new Exception("Leading spaces are not allowed");
+
+            var user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new Exception("User not found");
+
+            var isValidPassword = BCrypt.Net.BCrypt.Verify(
+                dto.CurrentPassword, user.Password);
+
+            if (!isValidPassword)
+                throw new Exception("Current password is incorrect");
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(
+                dto.NewPassword,
+                workFactor: 12
+            );
+
+            user.Password = hashedPassword;
+
+            // OPTIONAL: force logout from all devices
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            await _userRepository.UpdateAsync(user);
+        }
+
+        public async Task ResetPasswordWithOtpAsync(ResetPasswordWithOtpDTO dto)
+        {
+            var email = dto.Email.Trim().ToLower();
+
+            var user = await _userRepository
+                .GetByEmailOtpAsync(email, dto.Otp)
+                ?? throw new Exception("Invalid or expired OTP");
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(
+                dto.NewPassword, workFactor: 12);
+
+            user.Password = hashedPassword;
+
+            // 🔐 cleanup
+            user.EmailOtp = null;
+            user.EmailOtpExpiry = null;
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
+
+            await _userRepository.UpdateAsync(user);
+        }
+
+
+        public async Task SendPasswordOtpAsync(SendPasswordOtpDTO dto)
+        {
+            var email = dto.Email.Trim().ToLower();
+            var user = await _userRepository.GetByEmailAsync(email);
+
+            if (user == null)
+                return;
+
+            var otp = new Random().Next(100000, 999999).ToString();
+
+            user.EmailOtp = otp;
+            user.EmailOtpExpiry = DateTime.UtcNow.AddMinutes(5);
+
+            await _userRepository.UpdateAsync(user);
+
+            await _emailService.SendAsync(
+                email,
+                "TekTrov Password Reset OTP",
+                $"<h3>Your OTP is <b>{otp}</b></h3><p>Valid for 5 minutes.</p>"
+            );
+        }
+
+        public async Task UpdateWishlistAsync(int userId, List<int> productIds)
+        {
+            var user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new Exception("User not found");
+
+            user.Wishlists.Clear();
+
+            foreach (var productId in productIds)
+            {
+                user.Wishlists.Add(new Wishlist
+                {
+                    ProductId = productId,
+                    UserId = userId
+                });
+            }
+
+            await _userRepository.UpdateAsync(user);
+        }
+
+
+
+
+
+
+
 
     }
 

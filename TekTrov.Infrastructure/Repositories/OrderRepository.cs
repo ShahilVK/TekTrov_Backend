@@ -61,5 +61,15 @@ namespace TekTrov.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Order?> GetByIdAsync(int orderId)
+        {
+            return await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
+
+
     }
 }

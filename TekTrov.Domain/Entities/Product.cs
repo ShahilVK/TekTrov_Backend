@@ -17,7 +17,12 @@ namespace TekTrov.Domain.Entities
         public string Category { get; set; } = null!;
         public int Stock { get; set; }
 
-       
+
+        public double Rating { get; set; } = 0;
+        public int SoldCount { get; set; } = 0;
+
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+
 
     }
 }

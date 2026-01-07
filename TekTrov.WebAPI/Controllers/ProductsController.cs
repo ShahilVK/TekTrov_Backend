@@ -74,6 +74,56 @@ namespace TekTrov.WebApi.Controllers
                 ));
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProducts([FromQuery] string query)
+        {
+            var products = await _productService.SearchProductsAsync(query);
+
+            if (products.Count == 0)
+                return NotFound(ApiResponse<object>.FailureResponse(
+                    "No products found", 404));
+
+            return Ok(ApiResponse<object>.SuccessResponse(
+                products,
+                "Products fetched successfully"
+            ));
+        }
+
+[HttpGet("sort")]
+public async Task<IActionResult> GetSortedProducts(
+    [FromQuery] string sort)
+{
+    if (int.TryParse(sort, out _))
+    {
+        return BadRequest(ApiResponse<object>.FailureResponse(
+            "Sort must be a valid name, not a number",
+            400
+        ));
+    }
+
+    if (!Enum.TryParse<ProductSortType>(
+            sort,
+            ignoreCase: true,
+            out var sortType))
+    {
+        return BadRequest(ApiResponse<object>.FailureResponse(
+            "Invalid sort option",
+            400
+        ));
+    }
+
+    var products = await _productService.GetSortedProductsAsync(sortType);
+
+    return Ok(ApiResponse<object>.SuccessResponse(
+        products,
+        "Products sorted successfully"
+    ));
+}
+
+
+
+
+
         [Authorize(Roles = Roles.Admin)]
         [HttpPost("Admin-add-products")]
         [Consumes("multipart/form-data")]
@@ -118,6 +168,22 @@ namespace TekTrov.WebApi.Controllers
                 "Product stock updated successfully"
             ));
         }
+
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpDelete("{productId:int}")]
+        public async Task<IActionResult> DeleteProduct(int productId)
+        {
+            await _productService.DeleteProductAsync(productId);
+
+            return Ok(
+                ApiResponse<bool>.SuccessResponse(
+                    true,
+                    "Product deleted successfully"
+                )
+            );
+        }
+
 
     }
 }

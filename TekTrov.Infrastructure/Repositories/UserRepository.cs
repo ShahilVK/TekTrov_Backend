@@ -45,6 +45,25 @@ namespace TekTrov.Infrastructure.Repositories
                     u.RefreshTokenExpiryTime > DateTime.UtcNow
                 );
         }
+
+        public async Task<User?> GetByPasswordResetTokenAsync(string token)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u =>
+                u.PasswordResetToken == token &&
+                u.PasswordResetTokenExpiry > DateTime.UtcNow
+            );
+        }
+
+        public async Task<User?> GetByEmailOtpAsync(string email, string otp)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u =>
+                u.Email == email &&
+                u.EmailOtp == otp &&
+                u.EmailOtpExpiry > DateTime.UtcNow
+            );
+        }
+
+
     }
 }
 

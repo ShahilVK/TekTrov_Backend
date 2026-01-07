@@ -20,5 +20,16 @@ namespace TekTrov.Application.Interfaces.Services
 
         Task BlockUserAsync(int userId);
         Task UnblockUserAsync(int userId);
+
+        Task ChangePasswordAsync(int userId, ChangePasswordDTO dto);
+
+        Task SendPasswordOtpAsync(SendPasswordOtpDTO dto);
+        Task ResetPasswordWithOtpAsync(ResetPasswordWithOtpDTO dto);
+
+        Task UpdateWishlistAsync(int userId, List<int> productIds);
+
+
+
+
     }
 }

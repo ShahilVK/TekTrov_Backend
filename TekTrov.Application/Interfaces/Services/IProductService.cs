@@ -17,5 +17,14 @@ namespace TekTrov.Application.Interfaces.Services
         Task UpdateStockAsync(int productId, int stock);
 
         Task CreateProductAsync(CreateProductDTO dto, string? imageUrl);
+        Task DeleteProductAsync(int productId);
+
+        Task<List<Product>> SearchProductsAsync(string query);
+
+        Task<List<Product>> GetSortedProductsAsync(ProductSortType sortType);
+
+
+
+
     }
 }

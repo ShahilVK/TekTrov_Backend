@@ -64,5 +64,34 @@ namespace TekTrov.Application.Services
             await _productRepository.UpdateAsync(product);
         }
 
+        public async Task DeleteProductAsync(int productId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (product == null)
+                throw new Exception("Product not found");
+
+            await _productRepository.DeleteAsync(product);
+        }
+
+        public async Task<List<Product>> SearchProductsAsync(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return new List<Product>();
+
+            return await _productRepository.SearchByNameAsync(
+                query.Trim()
+            );
+        }
+
+        public async Task<List<Product>> GetSortedProductsAsync(ProductSortType sortType)
+        {
+            return await _productRepository.GetSortedAsync(sortType);
+        }
+
+
+
+
+
     }
 }

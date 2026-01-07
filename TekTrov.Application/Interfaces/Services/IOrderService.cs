@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TekTrov.Application.DTOs.Order;
 using TekTrov.Domain.Entities;
+using TekTrov.Domain.Enums;
 
 namespace TekTrov.Application.Interfaces.Services
 {
@@ -19,5 +20,7 @@ namespace TekTrov.Application.Interfaces.Services
         Task CancelOrderAsync(int userId, int orderId);
 
         Task<List<AdminOrderDTO>> GetAllOrdersForAdminAsync();
+        Task UpdateOrderStatusAsync(int orderId, OrderStatus status);
+
     }
 }

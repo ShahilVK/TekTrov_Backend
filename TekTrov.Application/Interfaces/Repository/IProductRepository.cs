@@ -1,4 +1,5 @@
-﻿using TekTrov.Domain.Entities;
+﻿using TekTrov.Application.DTOs.Products;
+using TekTrov.Domain.Entities;
 
 namespace TekTrov.Application.Interfaces.Repositories
 {
@@ -11,5 +12,14 @@ namespace TekTrov.Application.Interfaces.Repositories
         Task UpdateAsync(Product product);
 
         Task<List<Product>> GetByCategoryAsync(string category);
+        Task DeleteAsync(Product product);
+
+        Task<List<Product>> SearchByNameAsync(string query);
+
+        Task<List<Product>> GetSortedAsync(ProductSortType sortType);
+
+
+
+
     }
 }

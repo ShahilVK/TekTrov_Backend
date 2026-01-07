@@ -217,6 +217,23 @@ namespace TekTrov.Application.Services
             }).ToList();
         }
 
+        public async Task UpdateOrderStatusAsync(int orderId, OrderStatus status)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId)
+                ?? throw new Exception("Order not found");
+
+            if (order.Status == OrderStatus.Cancelled)
+                throw new Exception("Cancelled order cannot be updated");
+
+            if (order.Status == OrderStatus.Delivered)
+                throw new Exception("Delivered order cannot be updated");
+
+            order.Status = status;
+
+            await _orderRepository.UpdateAsync(order);
+        }
+
+
 
     }
 }

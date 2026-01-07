@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TekTrov.Application.Common;
+using TekTrov.Application.DTOs.Users;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Enums;
 
@@ -51,4 +52,48 @@ public class UsersController : ControllerBase
             )
         );
     }
+
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword(
+       [FromBody] ChangePasswordDTO dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(
+                ApiResponse<object>.FailureResponse(
+                    "Validation failed", 400)
+            );
+        }
+
+        var userId = int.Parse(
+            User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+        );
+
+        await _userService.ChangePasswordAsync(userId, dto);
+
+        return Ok(
+            ApiResponse<bool>.SuccessResponse(
+                true,
+                "Password changed successfully"
+            )
+        );
+    }
+
+    //[Authorize]
+    //[HttpPatch("My Profile/wishlist")]
+    //public async Task<IActionResult> UpdateWishlist(
+    //[FromBody] UpdateWishlistDTO dto)
+    //{
+    //    var userId = int.Parse(
+    //        User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+    //    );
+
+    //    await _userService.UpdateWishlistAsync(userId, dto.ProductIds);
+
+    //    return Ok(ApiResponse<bool>.SuccessResponse(
+    //        true,
+    //        "Wishlist updated successfully"
+    //    ));
+    //}
+
 }

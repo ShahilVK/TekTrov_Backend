@@ -86,6 +86,12 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.AddScoped<IImageService, CloudinaryImageService>();
 
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+
+
 
 
 // --------------------
@@ -176,6 +182,32 @@ builder.Services.AddAuthorization(options =>
 });
 
 
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5174") // React dev server
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
+
+
+
 var cloudinarySettings = builder.Configuration
     .GetSection("Cloudinary")
     .Get<CloudinarySettings>()
@@ -210,10 +242,18 @@ if (app.Environment.IsDevelopment())
     await context.Database.MigrateAsync();
     await DbInitializer.SeedAdminAsync(context);
 }
-app.UseStaticFiles(); // ✅ REQUIRED FOR IMAGE ACCESS
+app.UseStaticFiles();// ✅ REQUIRED FOR IMAGE ACCESS
+
+app.UseCors("AllowReactApp");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 
 
 app.UseHttpsRedirection();
+app.UseSession();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
