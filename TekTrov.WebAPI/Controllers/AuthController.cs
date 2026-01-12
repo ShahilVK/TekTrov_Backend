@@ -108,22 +108,7 @@ public class AuthController : ControllerBase
     }
 
 
-    //[HttpPost("forgot-password")]
-    //public async Task<IActionResult> ForgotPassword(
-    //[FromBody] ForgotPasswordDTO dto)
-    //{
-    //    if (!ModelState.IsValid)
-    //        return BadRequest(ApiResponse<object>.FailureResponse(
-    //            "Invalid email", 400));
-
-    //    await _userService.ForgotPasswordAsync(dto);
-
-    //    return Ok(ApiResponse<bool>.SuccessResponse(
-    //        true,
-    //        "If the email exists, a reset link has been sent"
-    //    ));
-    //}
-
+  
     [HttpPost("password/reset")]
     public async Task<IActionResult> ResetPasswordWithOtp(
      [FromBody] ResetPasswordWithOtpDTO dto)
@@ -156,28 +141,6 @@ public class AuthController : ControllerBase
             "If email exists, OTP has been sent"
         ));
     }
-
-
-
-
-    //[HttpPost("verify-email-otp")]
-    //public async Task<IActionResult> VerifyEmailOtp(
-    //[FromBody] VerifyOtpDTO dto)
-    //{
-    //    if (!ModelState.IsValid)
-    //        return BadRequest(ApiResponse<object>.FailureResponse(
-    //            "Invalid data", 400));
-
-    //    await _userService.VerifyEmailOtpAsync(dto);
-
-    //    return Ok(ApiResponse<bool>.SuccessResponse(
-    //        true,
-    //        "Email verified successfully"
-    //    ));
-    //}
-
-
-
 
 
 }

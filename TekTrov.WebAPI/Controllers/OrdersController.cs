@@ -91,10 +91,20 @@ public class OrdersController : ControllerBase
 
 
     [HttpPost("{orderId:int}/pay")]
-    public async Task<IActionResult> PayOrder(int orderId)
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> PayOrder(
+     int orderId,
+     [FromBody] OrderPaymentDTO dto)
     {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        await _orderService.PayOrderAsync(userId, orderId);
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.FailureResponse(
+                "Invalid payment data", 400));
+
+        var userId = int.Parse(
+            User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+        );
+
+        await _orderService.PayOrderAsync(userId, orderId, dto);
 
         return Ok(ApiResponse<bool>.SuccessResponse(
             true,

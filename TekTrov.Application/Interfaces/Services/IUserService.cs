@@ -28,6 +28,8 @@ namespace TekTrov.Application.Interfaces.Services
 
         Task UpdateWishlistAsync(int userId, List<int> productIds);
 
+        Task UpdateProfileAsync(int userId, UpdateProfileDTO dto);
+
 
 
 

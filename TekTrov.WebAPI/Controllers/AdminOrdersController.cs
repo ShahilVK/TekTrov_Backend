@@ -19,7 +19,6 @@ namespace TekTrov.WebApi.Controllers
             _orderService = orderService;
         }
 
-        // ✅ GET ALL ORDERS (ADMIN)
         [HttpGet]
         public async Task<IActionResult> GetAllOrders()
         {

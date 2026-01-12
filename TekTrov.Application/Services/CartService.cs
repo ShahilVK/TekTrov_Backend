@@ -59,7 +59,9 @@ public class CartService : ICartService
             ProductId = c.ProductId,
             ProductName = c.Product!.Name,
             Price = c.Product.Price,
-            Quantity = c.Quantity
+            Quantity = c.Quantity,
+
+            ImageUrl = c.Product.ImageUrl
         }).ToList();
     }
 

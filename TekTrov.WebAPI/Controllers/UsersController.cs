@@ -79,21 +79,22 @@ public class UsersController : ControllerBase
         );
     }
 
-    //[Authorize]
-    //[HttpPatch("My Profile/wishlist")]
-    //public async Task<IActionResult> UpdateWishlist(
-    //[FromBody] UpdateWishlistDTO dto)
-    //{
-    //    var userId = int.Parse(
-    //        User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-    //    );
 
-    //    await _userService.UpdateWishlistAsync(userId, dto.ProductIds);
+    [HttpPatch("Update Profile")]
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileDTO dto)
+    {
+        var userId = int.Parse(
+            User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+        );
 
-    //    return Ok(ApiResponse<bool>.SuccessResponse(
-    //        true,
-    //        "Wishlist updated successfully"
-    //    ));
-    //}
+        await _userService.UpdateProfileAsync(userId, dto);
+
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
+            "Profile updated successfully"
+        ));
+    }
+
+
 
 }

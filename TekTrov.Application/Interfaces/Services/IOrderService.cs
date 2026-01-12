@@ -14,8 +14,8 @@ namespace TekTrov.Application.Interfaces.Services
         Task<List<OrderDTO>> GetOrdersAsync(int userId);
         Task<OrderDTO?> GetOrderByIdAsync(int orderId, int userId);
         Task PlaceOrderAsync(int userId, CheckoutDTO dto);
-        Task PayOrderAsync(int userId, int orderId);
         Task PlaceDirectOrderAsync(int userId, DirectOrderDTO dto);
+        Task PayOrderAsync(int userId, int orderId, OrderPaymentDTO dto);
 
         Task CancelOrderAsync(int userId, int orderId);
 

@@ -251,6 +251,18 @@ namespace TekTrov.Application.Services
             await _userRepository.UpdateAsync(user);
         }
 
+        public async Task UpdateProfileAsync(int userId, UpdateProfileDTO dto)
+        {
+            var user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new Exception("User not found");
+
+            user.Name = dto.Name.Trim();
+            user.Email = dto.Email.Trim().ToLower();
+
+            await _userRepository.UpdateAsync(user);
+        }
+
+
 
 
 

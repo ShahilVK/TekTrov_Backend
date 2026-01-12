@@ -41,7 +41,8 @@ namespace TekTrov.Application.Services
                     ProductId = i.ProductId,
                     ProductName = i.Product!.Name,
                     Price = i.Price,
-                    Quantity = i.Quantity
+                    Quantity = i.Quantity,
+                    ImageUrl = i.Product.ImageUrl
                 }).ToList()
             }).ToList();
         }
@@ -61,7 +62,8 @@ namespace TekTrov.Application.Services
                     ProductId = i.ProductId,
                     ProductName = i.Product!.Name,
                     Price = i.Price,
-                    Quantity = i.Quantity
+                    Quantity = i.Quantity,
+                    ImageUrl = i.Product.ImageUrl
                 }).ToList()
             };
         }
@@ -115,7 +117,10 @@ namespace TekTrov.Application.Services
         }
 
 
-        public async Task PayOrderAsync(int userId, int orderId)
+        public async Task PayOrderAsync(
+     int userId,
+     int orderId,
+     OrderPaymentDTO dto)
         {
             var order = await _orderRepository.GetByIdAsync(orderId, userId);
 
@@ -125,10 +130,19 @@ namespace TekTrov.Application.Services
             if (order.Status == OrderStatus.Paid)
                 throw new Exception("Order already paid");
 
+            if (order.Status == OrderStatus.Cancelled)
+                throw new Exception("Cancelled order cannot be paid");
+
+            // ✅ Payment validation (basic)
+            if (string.IsNullOrWhiteSpace(dto.TransactionId))
+                throw new Exception("Invalid transaction");
+
             order.Status = OrderStatus.Paid;
+            order.ModifiedOn = DateTime.UtcNow;
 
             await _orderRepository.UpdateAsync(order);
         }
+
 
         public async Task CancelOrderAsync(int userId, int orderId)
         {
@@ -212,7 +226,8 @@ namespace TekTrov.Application.Services
                     ProductId = i.ProductId,
                     ProductName = i.Product!.Name,
                     Price = i.Price,
-                    Quantity = i.Quantity
+                    Quantity = i.Quantity,
+                    ImageUrl = i.Product.ImageUrl
                 }).ToList()
             }).ToList();
         }

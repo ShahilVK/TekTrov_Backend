@@ -198,7 +198,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5174") // React dev server
+            .WithOrigins("http://localhost:5173") // React dev server
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -242,9 +242,11 @@ if (app.Environment.IsDevelopment())
     await context.Database.MigrateAsync();
     await DbInitializer.SeedAdminAsync(context);
 }
-app.UseStaticFiles();// ✅ REQUIRED FOR IMAGE ACCESS
+
 
 app.UseCors("AllowReactApp");
+
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
