@@ -24,14 +24,12 @@ namespace TekTrov.Application.Services
             var existing = await _wishlistRepository
                 .GetAsync(userId, productId);
 
-            // ❌ Exists → Remove
             if (existing != null)
             {
                 await _wishlistRepository.RemoveAsync(existing);
                 return false; // removed
             }
 
-            // ✅ Not exists → Add
             var wishlist = new Wishlist
             {
                 UserId = userId,

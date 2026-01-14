@@ -200,7 +200,6 @@ namespace TekTrov.Application.Services
 
             user.Password = hashedPassword;
 
-            // 🔐 cleanup
             user.EmailOtp = null;
             user.EmailOtpExpiry = null;
             user.RefreshToken = null;

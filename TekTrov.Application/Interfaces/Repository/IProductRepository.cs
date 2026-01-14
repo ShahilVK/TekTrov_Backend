@@ -18,6 +18,9 @@ namespace TekTrov.Application.Interfaces.Repositories
 
         Task<List<Product>> GetSortedAsync(ProductSortType sortType);
 
+        Task<int> CountAsync();
+        Task<List<Product>> GetPagedAsync(int pageNumber, int pageSize);
+
 
 
 

@@ -1,5 +1,6 @@
 ﻿
 
+using TekTrov.Application.Common;
 using TekTrov.Application.DTOs.Products;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
@@ -88,6 +89,34 @@ namespace TekTrov.Application.Services
         {
             return await _productRepository.GetSortedAsync(sortType);
         }
+
+        public async Task<PagedResult<ProductResponseDTO>> GetProductsPagedAsync(
+            int pageNumber,
+            int pageSize)
+        {
+            if (pageNumber <= 0) pageNumber = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var totalRecords = await _productRepository.CountAsync();
+            var products = await _productRepository
+                .GetPagedAsync(pageNumber, pageSize);
+
+            return new PagedResult<ProductResponseDTO>
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                Items = products.Select(p => new ProductResponseDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    Category = p.Category,
+                    ImageUrl = p.ImageUrl
+                }).ToList()
+            };
+        }
+
 
 
 

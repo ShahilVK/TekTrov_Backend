@@ -90,6 +90,21 @@ namespace TekTrov.Infrastructure.Repositories
             return await query.ToListAsync();
         }
 
+        public async Task<int> CountAsync()
+        {
+            return await _context.Products.CountAsync();
+        }
+
+        public async Task<List<Product>> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            return await _context.Products
+                .OrderByDescending(p => p.CreatedOn)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+
 
 
 

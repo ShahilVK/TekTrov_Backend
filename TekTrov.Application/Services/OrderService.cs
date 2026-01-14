@@ -68,7 +68,7 @@ namespace TekTrov.Application.Services
             };
         }
 
-        public async Task PlaceOrderAsync(int userId, CheckoutDTO dto)
+        public async Task<int> PlaceOrderAsync(int userId, CheckoutDTO dto)
         {
             var cartItems = await _cartRepository.GetByUserIdAsync(userId);
 
@@ -80,7 +80,6 @@ namespace TekTrov.Application.Services
                 UserId = userId,
                 OrderDate = DateTime.UtcNow,
 
-                //Shipping Address
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
                 AddressLine = dto.AddressLine,
@@ -94,7 +93,6 @@ namespace TekTrov.Application.Services
 
             foreach (var item in cartItems)
             {
-                // Stock validation
                 if (item.Quantity > item.Product!.Stock)
                     throw new Exception($"Insufficient stock for {item.Product.Name}");
 
@@ -114,34 +112,35 @@ namespace TekTrov.Application.Services
 
             await _orderRepository.AddAsync(order);
             await _cartRepository.RemoveRangeAsync(cartItems);
+            return order.Id;
         }
 
 
-        public async Task PayOrderAsync(
-     int userId,
-     int orderId,
-     OrderPaymentDTO dto)
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId, userId);
+     //   public async Task PayOrderAsync(
+     //int userId,
+     //int orderId,
+     //OrderPaymentDTO dto)
+     //   {
+     //       var order = await _orderRepository.GetByIdAsync(orderId, userId);
 
-            if (order == null)
-                throw new Exception("Order not found");
+     //       if (order == null)
+     //           throw new Exception("Order not found");
 
-            if (order.Status == OrderStatus.Paid)
-                throw new Exception("Order already paid");
+     //       if (order.Status == OrderStatus.Paid)
+     //           throw new Exception("Order already paid");
 
-            if (order.Status == OrderStatus.Cancelled)
-                throw new Exception("Cancelled order cannot be paid");
+     //       if (order.Status == OrderStatus.Cancelled)
+     //           throw new Exception("Cancelled order cannot be paid");
 
-            // ✅ Payment validation (basic)
-            if (string.IsNullOrWhiteSpace(dto.TransactionId))
-                throw new Exception("Invalid transaction");
+     //       // ✅ Payment validation (basic)
+     //       if (string.IsNullOrWhiteSpace(dto.TransactionId))
+     //           throw new Exception("Invalid transaction");
 
-            order.Status = OrderStatus.Paid;
-            order.ModifiedOn = DateTime.UtcNow;
+     //       order.Status = OrderStatus.Paid;
+     //       order.ModifiedOn = DateTime.UtcNow;
 
-            await _orderRepository.UpdateAsync(order);
-        }
+     //       await _orderRepository.UpdateAsync(order);
+     //   }
 
 
         public async Task CancelOrderAsync(int userId, int orderId)
@@ -167,7 +166,7 @@ namespace TekTrov.Application.Services
             await _orderRepository.UpdateAsync(order);
         }
 
-        public async Task PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
+        public async Task<int>  PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
         {
             var product = await _productRepository.GetByIdAsync(dto.ProductId);
 
@@ -202,11 +201,11 @@ namespace TekTrov.Application.Services
             order.OrderItems.Add(orderItem);
             order.TotalAmount = product.Price * dto.Quantity;
 
-            //  Reduce stock safely
             product.Stock -= dto.Quantity;
 
             await _orderRepository.AddAsync(order);
             await _productRepository.UpdateAsync(product);
+            return order.Id;
         }
 
         public async Task<List<AdminOrderDTO>> GetAllOrdersForAdminAsync()

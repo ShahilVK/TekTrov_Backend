@@ -9,7 +9,6 @@ namespace TekTrov.Infrastructure.Services
             string fileName,
             string contentType)
         {
-            // TEMP dummy upload
             await Task.CompletedTask;
 
             return $"https://dummyimage.com/{Guid.NewGuid()}";

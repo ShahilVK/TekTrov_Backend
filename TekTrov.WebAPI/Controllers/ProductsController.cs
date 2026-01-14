@@ -120,6 +120,21 @@ public async Task<IActionResult> GetSortedProducts(
     ));
 }
 
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetProductsPaged(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
+        {
+            var result = await _productService
+                .GetProductsPagedAsync(pageNumber, pageSize);
+
+            return Ok(ApiResponse<object>.SuccessResponse(
+                result,
+                "Products fetched successfully"
+            ));
+        }
+
+
 
 
 
@@ -183,6 +198,8 @@ public async Task<IActionResult> GetSortedProducts(
                 )
             );
         }
+
+
 
 
     }

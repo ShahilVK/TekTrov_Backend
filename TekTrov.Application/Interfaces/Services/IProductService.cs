@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TekTrov.Application.Common;
 using TekTrov.Application.DTOs.Products;
 using TekTrov.Domain.Entities;
 
@@ -22,6 +23,10 @@ namespace TekTrov.Application.Interfaces.Services
         Task<List<Product>> SearchProductsAsync(string query);
 
         Task<List<Product>> GetSortedProductsAsync(ProductSortType sortType);
+
+        Task<PagedResult<ProductResponseDTO>> GetProductsPagedAsync(
+       int pageNumber,
+       int pageSize);
 
 
 

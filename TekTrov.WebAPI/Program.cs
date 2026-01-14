@@ -91,6 +91,11 @@ builder.Services.Configure<EmailSettings>(
 
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
+builder.Services.AddScoped<IPaymentService, RazorpayPaymentService>();
+builder.Services.Configure<RazorpaySettings>(
+    builder.Configuration.GetSection("Razorpay"));
+
+
 
 
 
@@ -182,6 +187,8 @@ builder.Services.AddAuthorization(options =>
 });
 
 
+
+
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
@@ -256,7 +263,6 @@ app.UseAuthorization();
 app.UseHttpsRedirection();
 app.UseSession();
 
-app.UseAuthentication();
-app.UseAuthorization();
+
 app.MapControllers();
 app.Run();
