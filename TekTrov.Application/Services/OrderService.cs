@@ -166,12 +166,56 @@ namespace TekTrov.Application.Services
             await _orderRepository.UpdateAsync(order);
         }
 
-        public async Task<int>  PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
-        {
-            var product = await _productRepository.GetByIdAsync(dto.ProductId);
+        //public async Task<int>  PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
+        //{
+        //    var product = await _productRepository.GetByIdAsync(dto.ProductId);
 
-            if (product == null)
-                throw new Exception("Product not found");
+        //    if (product == null)
+        //        throw new Exception("Product not found");
+
+        //    if (product.Stock < dto.Quantity)
+        //        throw new Exception("Insufficient stock");
+
+        //    var order = new Order
+        //    {
+        //        UserId = userId,
+        //        OrderDate = DateTime.UtcNow,
+        //        Status = OrderStatus.Pending,
+
+        //        FullName = dto.FullName,
+        //        PhoneNumber = dto.PhoneNumber,
+        //        AddressLine = dto.AddressLine,
+        //        City = dto.City,
+        //        State = dto.State,
+        //        PostalCode = dto.PostalCode,
+        //        Country = dto.Country
+        //    };
+
+        //    var orderItem = new OrderItem
+        //    {
+        //        ProductId = product.Id,
+        //        Quantity = dto.Quantity,
+        //        Price = product.Price
+        //    };
+
+        //    order.OrderItems.Add(orderItem);
+        //    order.TotalAmount = product.Price * dto.Quantity;
+
+        //    product.Stock -= dto.Quantity;
+
+        //    await _orderRepository.AddAsync(order);
+        //    await _productRepository.UpdateAsync(product);
+        //    return order.Id;
+        //}
+
+
+        public async Task<int> PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
+        {
+            if (dto.Quantity <= 0)
+                throw new Exception("Invalid quantity");
+
+            var product = await _productRepository.GetByIdAsync(dto.ProductId)
+                ?? throw new Exception("Product not found");
 
             if (product.Stock < dto.Quantity)
                 throw new Exception("Insufficient stock");
@@ -191,22 +235,23 @@ namespace TekTrov.Application.Services
                 Country = dto.Country
             };
 
-            var orderItem = new OrderItem
+            order.OrderItems.Add(new OrderItem
             {
                 ProductId = product.Id,
                 Quantity = dto.Quantity,
                 Price = product.Price
-            };
+            });
 
-            order.OrderItems.Add(orderItem);
             order.TotalAmount = product.Price * dto.Quantity;
 
             product.Stock -= dto.Quantity;
 
             await _orderRepository.AddAsync(order);
             await _productRepository.UpdateAsync(product);
+
             return order.Id;
         }
+
 
         public async Task<List<AdminOrderDTO>> GetAllOrdersForAdminAsync()
         {

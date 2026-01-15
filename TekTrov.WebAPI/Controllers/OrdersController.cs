@@ -24,16 +24,14 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> PlaceDirectOrder(
        [FromBody] DirectOrderDTO dto)
     {
+
+        if (!ModelState.IsValid)
+            return BadRequest(ApiResponse<object>.FailureResponse(
+                "Invalid order data", 400));
         var userId = int.Parse(
             User.FindFirst(ClaimTypes.NameIdentifier)!.Value
         );
 
-        //await _orderService.PlaceDirectOrderAsync(userId, dto);
-
-        //return Ok(ApiResponse<bool>.SuccessResponse(
-        //    true,
-        //    "Order placed successfully"
-        //));
         var orderId = await _orderService.PlaceDirectOrderAsync(userId, dto);
 
         return Ok(ApiResponse<int>.SuccessResponse(
@@ -88,12 +86,7 @@ public class OrdersController : ControllerBase
             User.FindFirst(ClaimTypes.NameIdentifier)!.Value
         );
 
-        //await _orderService.PlaceOrderAsync(userId, dto);
-
-        //return Ok(ApiResponse<bool>.SuccessResponse(
-        //    true,
-        //    "Order placed successfully"
-        //));
+      
 
         var orderId = await _orderService.PlaceOrderAsync(userId, dto);
 
@@ -105,27 +98,6 @@ public class OrdersController : ControllerBase
     }
 
 
-    //[HttpPost("{orderId:int}/pay")]
-    //[Authorize(Roles = "User")]
-    //public async Task<IActionResult> PayOrder(
-    // int orderId,
-    // [FromBody] OrderPaymentDTO dto)
-    //{
-    //    if (!ModelState.IsValid)
-    //        return BadRequest(ApiResponse<object>.FailureResponse(
-    //            "Invalid payment data", 400));
-
-    //    var userId = int.Parse(
-    //        User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-    //    );
-
-    //    await _orderService.PayOrderAsync(userId, orderId, dto);
-
-    //    return Ok(ApiResponse<bool>.SuccessResponse(
-    //        true,
-    //        "Order payment successful"
-    //    ));
-    //}
 
     [Authorize(Roles = "User")]
     [HttpPost("{orderId:int}/cancel")]

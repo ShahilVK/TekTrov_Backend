@@ -3,6 +3,7 @@ using TekTrov.Application.DTOs.Users;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Entities;
+using TekTrov.Domain.Enums;
 
 
 namespace TekTrov.Application.Services
@@ -48,7 +49,7 @@ namespace TekTrov.Application.Services
                 Name = dto.Name,
                 Email = email,
                 Password = hashedPassword,
-                Role = "User"
+                Role = Roles.User
             };
 
             await _userRepository.AddAsync(user);
@@ -180,7 +181,6 @@ namespace TekTrov.Application.Services
 
             user.Password = hashedPassword;
 
-            // OPTIONAL: force logout from all devices
             user.RefreshToken = null;
             user.RefreshTokenExpiryTime = null;
 

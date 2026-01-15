@@ -10,7 +10,7 @@ namespace TekTrov.WebApi.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize(Roles = Roles.User)]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -20,7 +20,7 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
-    [HttpGet("My Profile")]
+    [HttpGet("my-profile")]
     public async Task<IActionResult> GetMyProfile()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
