@@ -80,7 +80,7 @@ namespace TekTrov.Application.Services
     if (generatedSignature != dto.RazorpaySignature)
         throw new Exception("Payment verification failed");
 
-    existingOrder.Status = OrderStatus.Paid;
+    existingOrder.Status = OrderStatus.Pending;
     existingOrder.ModifiedOn = DateTime.UtcNow;
 
     await _orderRepository.UpdateAsync(existingOrder);

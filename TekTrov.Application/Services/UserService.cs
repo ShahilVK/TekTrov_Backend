@@ -291,6 +291,16 @@ namespace TekTrov.Application.Services
                 .ToList();
         }
 
+        public async Task DeleteUserAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new Exception("User not found");
+
+            user.IsDeleted = true; // soft delete (recommended)
+            await _userRepository.UpdateAsync(user);
+        }
+
+
     }
 
 }

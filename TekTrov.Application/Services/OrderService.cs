@@ -116,33 +116,6 @@ namespace TekTrov.Application.Services
         }
 
 
-     //   public async Task PayOrderAsync(
-     //int userId,
-     //int orderId,
-     //OrderPaymentDTO dto)
-     //   {
-     //       var order = await _orderRepository.GetByIdAsync(orderId, userId);
-
-     //       if (order == null)
-     //           throw new Exception("Order not found");
-
-     //       if (order.Status == OrderStatus.Paid)
-     //           throw new Exception("Order already paid");
-
-     //       if (order.Status == OrderStatus.Cancelled)
-     //           throw new Exception("Cancelled order cannot be paid");
-
-     //       // ✅ Payment validation (basic)
-     //       if (string.IsNullOrWhiteSpace(dto.TransactionId))
-     //           throw new Exception("Invalid transaction");
-
-     //       order.Status = OrderStatus.Paid;
-     //       order.ModifiedOn = DateTime.UtcNow;
-
-     //       await _orderRepository.UpdateAsync(order);
-     //   }
-
-
         public async Task CancelOrderAsync(int userId, int orderId)
         {
             var order = await _orderRepository.GetByIdAsync(orderId, userId);
@@ -166,47 +139,6 @@ namespace TekTrov.Application.Services
             await _orderRepository.UpdateAsync(order);
         }
 
-        //public async Task<int>  PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
-        //{
-        //    var product = await _productRepository.GetByIdAsync(dto.ProductId);
-
-        //    if (product == null)
-        //        throw new Exception("Product not found");
-
-        //    if (product.Stock < dto.Quantity)
-        //        throw new Exception("Insufficient stock");
-
-        //    var order = new Order
-        //    {
-        //        UserId = userId,
-        //        OrderDate = DateTime.UtcNow,
-        //        Status = OrderStatus.Pending,
-
-        //        FullName = dto.FullName,
-        //        PhoneNumber = dto.PhoneNumber,
-        //        AddressLine = dto.AddressLine,
-        //        City = dto.City,
-        //        State = dto.State,
-        //        PostalCode = dto.PostalCode,
-        //        Country = dto.Country
-        //    };
-
-        //    var orderItem = new OrderItem
-        //    {
-        //        ProductId = product.Id,
-        //        Quantity = dto.Quantity,
-        //        Price = product.Price
-        //    };
-
-        //    order.OrderItems.Add(orderItem);
-        //    order.TotalAmount = product.Price * dto.Quantity;
-
-        //    product.Stock -= dto.Quantity;
-
-        //    await _orderRepository.AddAsync(order);
-        //    await _productRepository.UpdateAsync(product);
-        //    return order.Id;
-        //}
 
 
         public async Task<int> PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
@@ -234,6 +166,7 @@ namespace TekTrov.Application.Services
                 PostalCode = dto.PostalCode,
                 Country = dto.Country
             };
+
 
             order.OrderItems.Add(new OrderItem
             {
@@ -280,14 +213,30 @@ namespace TekTrov.Application.Services
         {
             var order = await _orderRepository.GetByIdAsync(orderId)
                 ?? throw new Exception("Order not found");
-
             if (order.Status == OrderStatus.Cancelled)
                 throw new Exception("Cancelled order cannot be updated");
 
             if (order.Status == OrderStatus.Delivered)
                 throw new Exception("Delivered order cannot be updated");
 
+            // Allowed transitions only
+            if (order.Status == OrderStatus.Pending &&
+                status != OrderStatus.Shipped &&
+                status != OrderStatus.Cancelled)
+            {
+                throw new Exception("Invalid status transition");
+            }
+
+            if (order.Status == OrderStatus.Shipped &&
+                status != OrderStatus.Delivered)
+            {
+                throw new Exception("Invalid status transition");
+            }
+
             order.Status = status;
+
+            await _orderRepository.UpdateAsync(order);
+
 
             await _orderRepository.UpdateAsync(order);
         }

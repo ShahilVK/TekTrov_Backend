@@ -53,29 +53,6 @@ public class AdminUsersController : ControllerBase
 
 
 
-
-    //[HttpPatch("{userId:int}/block")]
-    //public async Task<IActionResult> BlockUser(int userId)
-    //{
-    //    await _userService.BlockUserAsync(userId);
-
-    //    return Ok(ApiResponse<bool>.SuccessResponse(
-    //        true,
-    //        "User blocked successfully"
-    //    ));
-    //}
-
-    //[HttpPatch("{userId:int}/unblock")]
-    //public async Task<IActionResult> UnblockUser(int userId)
-    //{
-    //    await _userService.UnblockUserAsync(userId);
-
-    //    return Ok(ApiResponse<bool>.SuccessResponse(
-    //        true,
-    //        "User unblocked successfully"
-    //    ));
-    //}
-
     [HttpPatch("{userId:int}/block-toggle")]
     public async Task<IActionResult> ToggleBlockUser(int userId)
     {
@@ -86,4 +63,16 @@ public class AdminUsersController : ControllerBase
             isBlocked ? "User blocked successfully" : "User unblocked successfully"
         ));
     }
+
+    [HttpDelete("{userId:int}")]
+    public async Task<IActionResult> DeleteUser(int userId)
+    {
+        await _userService.DeleteUserAsync(userId);
+
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
+            "User deleted successfully"
+        ));
+    }
+
 }
