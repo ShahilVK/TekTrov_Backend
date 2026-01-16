@@ -12,6 +12,7 @@ namespace TekTrov.Application.DTOs.Users
         public string Name { get; set; } = null!;
         public string Email { get; set; } = null!;
         public string Role { get; set; } = null!;
+        public bool IsBlocked { get; set; }
         public DateTime CreatedOn { get; set; }
     }
 }

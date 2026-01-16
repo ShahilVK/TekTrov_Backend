@@ -63,6 +63,15 @@ namespace TekTrov.Infrastructure.Repositories
             );
         }
 
+        public async Task<List<User>> GetAllAsync()
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .OrderByDescending(u => u.CreatedOn)
+                .ToListAsync();
+        }
+
+
 
     }
 }

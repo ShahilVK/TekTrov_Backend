@@ -18,8 +18,8 @@ namespace TekTrov.Application.Interfaces.Services
 
         Task<UserResponseDTO?> GetUserByIdAsync(int id);
 
-        Task BlockUserAsync(int userId);
-        Task UnblockUserAsync(int userId);
+        //Task BlockUserAsync(int userId);
+        //Task UnblockUserAsync(int userId);
 
         Task ChangePasswordAsync(int userId, ChangePasswordDTO dto);
 
@@ -29,6 +29,9 @@ namespace TekTrov.Application.Interfaces.Services
         Task UpdateWishlistAsync(int userId, List<int> productIds);
 
         Task UpdateProfileAsync(int userId, UpdateProfileDTO dto);
+        Task<List<UserResponseDTO>> GetAllUsersAsync();
+        Task<bool> ToggleBlockUserAsync(int userId);
+
 
 
 

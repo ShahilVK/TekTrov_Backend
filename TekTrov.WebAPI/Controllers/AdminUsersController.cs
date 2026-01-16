@@ -38,26 +38,52 @@ public class AdminUsersController : ControllerBase
                 "User fetched successfully"
             ));
     }
-
-    [HttpPatch("{userId:int}/block")]
-    public async Task<IActionResult> BlockUser(int userId)
+    [HttpGet]
+    public async Task<IActionResult> GetAllUsers()
     {
-        await _userService.BlockUserAsync(userId);
+        var users = await _userService.GetAllUsersAsync();
 
-        return Ok(ApiResponse<bool>.SuccessResponse(
-            true,
-            "User blocked successfully"
-        ));
+        return Ok(
+            ApiResponse<object>.SuccessResponse(
+                users,
+                "Users fetched successfully"
+            )
+        );
     }
 
-    [HttpPatch("{userId:int}/unblock")]
-    public async Task<IActionResult> UnblockUser(int userId)
+
+
+
+    //[HttpPatch("{userId:int}/block")]
+    //public async Task<IActionResult> BlockUser(int userId)
+    //{
+    //    await _userService.BlockUserAsync(userId);
+
+    //    return Ok(ApiResponse<bool>.SuccessResponse(
+    //        true,
+    //        "User blocked successfully"
+    //    ));
+    //}
+
+    //[HttpPatch("{userId:int}/unblock")]
+    //public async Task<IActionResult> UnblockUser(int userId)
+    //{
+    //    await _userService.UnblockUserAsync(userId);
+
+    //    return Ok(ApiResponse<bool>.SuccessResponse(
+    //        true,
+    //        "User unblocked successfully"
+    //    ));
+    //}
+
+    [HttpPatch("{userId:int}/block-toggle")]
+    public async Task<IActionResult> ToggleBlockUser(int userId)
     {
-        await _userService.UnblockUserAsync(userId);
+        var isBlocked = await _userService.ToggleBlockUserAsync(userId);
 
         return Ok(ApiResponse<bool>.SuccessResponse(
             true,
-            "User unblocked successfully"
+            isBlocked ? "User blocked successfully" : "User unblocked successfully"
         ));
     }
 }

@@ -15,8 +15,9 @@ namespace TekTrov.Application.Interfaces.Repositories
         Task<User?> GetByRefreshTokenAsync(string refreshToken);
         Task AddAsync(User user);
         Task UpdateAsync(User user);
+        Task<List<User>> GetAllAsync();
 
-       
+
 
         Task<User?> GetByEmailOtpAsync(string email, string otp);
 

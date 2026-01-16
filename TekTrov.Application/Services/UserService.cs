@@ -136,29 +136,41 @@ namespace TekTrov.Application.Services
         }
 
 
-        public async Task BlockUserAsync(int userId)
+        //public async Task BlockUserAsync(int userId)
+        //{
+        //    var user = await _userRepository.GetByIdAsync(userId)
+        //        ?? throw new Exception("User not found");
+
+        //    if (user.IsBlocked)
+        //        throw new Exception("User already blocked");
+
+        //    user.IsBlocked = true;
+        //    await _userRepository.UpdateAsync(user);
+        //}
+
+        //public async Task UnblockUserAsync(int userId)
+        //{
+        //    var user = await _userRepository.GetByIdAsync(userId)
+        //        ?? throw new Exception("User not found");
+
+        //    if (!user.IsBlocked)
+        //        throw new Exception("User already unblocked");
+
+        //    user.IsBlocked = false;
+        //    await _userRepository.UpdateAsync(user);
+        //}
+        public async Task<bool> ToggleBlockUserAsync(int userId)
         {
             var user = await _userRepository.GetByIdAsync(userId)
                 ?? throw new Exception("User not found");
 
-            if (user.IsBlocked)
-                throw new Exception("User already blocked");
+            user.IsBlocked = !user.IsBlocked;
 
-            user.IsBlocked = true;
             await _userRepository.UpdateAsync(user);
+
+            return user.IsBlocked;
         }
 
-        public async Task UnblockUserAsync(int userId)
-        {
-            var user = await _userRepository.GetByIdAsync(userId)
-                ?? throw new Exception("User not found");
-
-            if (!user.IsBlocked)
-                throw new Exception("User already unblocked");
-
-            user.IsBlocked = false;
-            await _userRepository.UpdateAsync(user);
-        }
 
         public async Task ChangePasswordAsync(int userId, ChangePasswordDTO dto)
         {
@@ -261,13 +273,23 @@ namespace TekTrov.Application.Services
             await _userRepository.UpdateAsync(user);
         }
 
+        public async Task<List<UserResponseDTO>> GetAllUsersAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
 
-
-
-
-
-
-
+            return users
+                .Where(u => !u.IsDeleted)
+                .Select(u => new UserResponseDTO
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email,
+                    Role = u.Role,
+                    IsBlocked = u.IsBlocked,
+                    CreatedOn = u.CreatedOn
+                })
+                .ToList();
+        }
 
     }
 
