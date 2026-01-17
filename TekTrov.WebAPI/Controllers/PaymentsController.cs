@@ -67,39 +67,28 @@ namespace TekTrov.WebApi.Controllers
         {
             _paymentService = paymentService;
         }
-
         [HttpPost("razorpay/create-order")]
         public async Task<IActionResult> CreateRazorpayOrder(
-            [FromBody] CreateRazorpayOrderDTO dto)
+                  [FromBody] CreateRazorpayOrderDTO dto)
         {
-            var userId = int.Parse(
-                User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-            );
-
             var result = await _paymentService
-                .CreateRazorpayOrderAsync(userId, dto.OrderId);
+                .CreateRazorpayOrderAsync(dto.Amount);
 
             return Ok(ApiResponse<object>.SuccessResponse(
                 result,
-                "Razorpay order created successfully"
+                "Razorpay order created"
             ));
         }
 
-        // ✅ STEP 2: VERIFY PAYMENT AFTER SUCCESS
-        [HttpPost("razorpay/payment")]
-        public async Task<IActionResult> RazorpayPayment(
-            [FromBody] RazorpayPaymentDTO dto)
+        [HttpPost("razorpay/verify")]
+        public async Task<IActionResult> VerifyPayment(
+             [FromBody] RazorpayPaymentDTO dto)
         {
-            var userId = int.Parse(
-                User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-            );
+            await _paymentService.VerifyPaymentAsync(dto);
 
-            var result = await _paymentService
-                .HandleRazorpayPaymentAsync(userId, dto);
-
-            return Ok(ApiResponse<object>.SuccessResponse(
-                result,
-                "Razorpay payment verified successfully"
+            return Ok(ApiResponse<bool>.SuccessResponse(
+                true,
+                "Payment verified"
             ));
         }
     }

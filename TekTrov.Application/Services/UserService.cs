@@ -66,7 +66,6 @@ namespace TekTrov.Application.Services
                 throw new Exception("Invalid email or password");
 
             if (user.IsBlocked)
-                //throw new Exception("Your account has been blocked by admin");
                 throw new UnauthorizedAccessException("Your account has been blocked by admin");
 
 

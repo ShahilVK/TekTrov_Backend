@@ -5,9 +5,10 @@ namespace TekTrov.Application.Interfaces.Services
     public interface IPaymentService
     {
      
-        Task<object> HandleRazorpayPaymentAsync(int userId, RazorpayPaymentDTO dto);
+        //Task<object> HandleRazorpayPaymentAsync(int userId, RazorpayPaymentDTO dto);
 
-        Task<RazorpayOrderResponseDTO> CreateRazorpayOrderAsync(int userId, int orderId);
+        Task<RazorpayOrderResponseDTO> CreateRazorpayOrderAsync(decimal amount);
+        Task<bool> VerifyPaymentAsync(RazorpayPaymentDTO dto);
 
     }
 }
