@@ -7,5 +7,7 @@ namespace TekTrov.Application.Interfaces.Services
      
         Task<object> HandleRazorpayPaymentAsync(int userId, RazorpayPaymentDTO dto);
 
+        Task<RazorpayOrderResponseDTO> CreateRazorpayOrderAsync(int userId, int orderId);
+
     }
 }

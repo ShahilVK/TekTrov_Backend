@@ -37,56 +37,92 @@ namespace TekTrov.Application.Services
         }
 
         public async Task<object> HandleRazorpayPaymentAsync(
-    int userId,
-    RazorpayPaymentDTO dto)
-{
-    if (string.IsNullOrWhiteSpace(dto.RazorpayOrderId))
-    {
-        var order = await _orderRepository.GetByIdAsync(dto.OrderId, userId)
-            ?? throw new Exception("Order not found");
+     int userId,
+     RazorpayPaymentDTO dto)
+        {
+            // 🔹 STEP 1: Razorpay order creation (first call)
+            if (string.IsNullOrWhiteSpace(dto.RazorpayOrderId))
+            {
+                var order = await _orderRepository.GetByIdAsync(dto.OrderId, userId)
+                    ?? throw new Exception("Order not found");
 
-        if (order.Status != OrderStatus.Pending)
-            throw new Exception("Order already processed");
+                if (order.Status != OrderStatus.Pending)
+                    throw new Exception("Order already processed");
 
-        var client = new RazorpayClient(
-            _settings.KeyId,
-            _settings.KeySecret);
+                var client = new RazorpayClient(
+                    _settings.KeyId,
+                    _settings.KeySecret);
 
-        var options = new Dictionary<string, object>
+                var options = new Dictionary<string, object>
         {
             { "amount", (int)(order.TotalAmount * 100) },
             { "currency", "INR" },
             { "receipt", $"order_{order.Id}" }
         };
 
-        var razorpayOrder = client.Order.Create(options);
+                var razorpayOrder = client.Order.Create(options);
 
-        return new RazorpayOrderResponseDTO
+                return new RazorpayOrderResponseDTO
+                {
+                    RazorpayOrderId = razorpayOrder["id"].ToString(),
+                    Amount = order.TotalAmount
+                };
+            }
+
+            var existingOrder = await _orderRepository
+                .GetOrderWithItemsAndProductsAsync(dto.OrderId, userId)
+                ?? throw new Exception("Order not found");
+
+            if (existingOrder.Status != OrderStatus.Pending)
+                throw new Exception("Order already processed");
+
+            foreach (var item in existingOrder.OrderItems)
+            {
+                var product = item.Product;
+
+                if (product.Stock < item.Quantity)
+                    throw new Exception("Insufficient stock");
+
+                product.Stock -= item.Quantity;
+            }
+
+            // ✅ Move order forward
+            existingOrder.Status = OrderStatus.Pending;
+            existingOrder.ModifiedOn = DateTime.UtcNow;
+
+            await _orderRepository.UpdateAsync(existingOrder);
+
+            return true;
+        }
+
+        public async Task<RazorpayOrderResponseDTO> CreateRazorpayOrderAsync(
+     int userId,
+     int orderId)
         {
-            RazorpayOrderId = razorpayOrder["id"].ToString(),
-            Amount = order.TotalAmount
-        };
-    }
+            var order = await _orderRepository.GetByIdAsync(orderId, userId)
+                ?? throw new Exception("Order not found");
 
-    var existingOrder = await _orderRepository.GetByIdAsync(dto.OrderId, userId)
-        ?? throw new Exception("Order not found");
+            var client = new RazorpayClient(
+                _settings.KeyId,
+                _settings.KeySecret
+            );
 
-    string payload =
-        $"{dto.RazorpayOrderId}|{dto.RazorpayPaymentId}";
+            var options = new Dictionary<string, object>
+    {
+        { "amount", (int)(order.TotalAmount * 100) }, // paise
+        { "currency", "INR" },
+        { "receipt", $"order_{order.Id}" }
+    };
 
-    string generatedSignature =
-        GenerateSignature(payload, _settings.KeySecret);
+            var razorpayOrder = client.Order.Create(options);
 
-    if (generatedSignature != dto.RazorpaySignature)
-        throw new Exception("Payment verification failed");
+            return new RazorpayOrderResponseDTO
+            {
+                RazorpayOrderId = razorpayOrder["id"].ToString(),
+                Amount = order.TotalAmount
+            };
+        }
 
-    existingOrder.Status = OrderStatus.Pending;
-    existingOrder.ModifiedOn = DateTime.UtcNow;
-
-    await _orderRepository.UpdateAsync(existingOrder);
-
-    return true;
-}
 
     }
 }

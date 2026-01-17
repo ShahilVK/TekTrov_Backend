@@ -12,17 +12,19 @@ namespace TekTrov.Application.Services
         private readonly IOrderRepository _orderRepository;
         private readonly ICartRepository _cartRepository;
         private readonly IProductRepository _productRepository;
-
+        private readonly IUserRepository _userRepository;
 
 
         public OrderService(
-     ICartRepository cartRepository,
-     IOrderRepository orderRepository,
-     IProductRepository productRepository)
+            ICartRepository cartRepository,
+            IOrderRepository orderRepository,
+            IProductRepository productRepository,
+            IUserRepository userRepository)
         {
             _cartRepository = cartRepository;
             _orderRepository = orderRepository;
             _productRepository = productRepository;
+            _userRepository = userRepository;
         }
 
 
@@ -70,6 +72,8 @@ namespace TekTrov.Application.Services
 
         public async Task<int> PlaceOrderAsync(int userId, CheckoutDTO dto)
         {
+            await EnsureUserNotBlockedAsync(userId); // ✅ FIXED
+
             var cartItems = await _cartRepository.GetByUserIdAsync(userId);
 
             if (!cartItems.Any())
@@ -79,6 +83,7 @@ namespace TekTrov.Application.Services
             {
                 UserId = userId,
                 OrderDate = DateTime.UtcNow,
+                Status = OrderStatus.Pending,
 
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
@@ -96,8 +101,6 @@ namespace TekTrov.Application.Services
                 if (item.Quantity > item.Product!.Stock)
                     throw new Exception($"Insufficient stock for {item.Product.Name}");
 
-                item.Product.Stock -= item.Quantity;
-
                 order.OrderItems.Add(new OrderItem
                 {
                     ProductId = item.ProductId,
@@ -112,8 +115,10 @@ namespace TekTrov.Application.Services
 
             await _orderRepository.AddAsync(order);
             await _cartRepository.RemoveRangeAsync(cartItems);
+
             return order.Id;
         }
+
 
 
         public async Task CancelOrderAsync(int userId, int orderId)
@@ -140,9 +145,10 @@ namespace TekTrov.Application.Services
         }
 
 
-
         public async Task<int> PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
         {
+            await EnsureUserNotBlockedAsync(userId); // ✅ FIXED
+
             if (dto.Quantity <= 0)
                 throw new Exception("Invalid quantity");
 
@@ -167,7 +173,6 @@ namespace TekTrov.Application.Services
                 Country = dto.Country
             };
 
-
             order.OrderItems.Add(new OrderItem
             {
                 ProductId = product.Id,
@@ -177,13 +182,11 @@ namespace TekTrov.Application.Services
 
             order.TotalAmount = product.Price * dto.Quantity;
 
-            product.Stock -= dto.Quantity;
-
             await _orderRepository.AddAsync(order);
-            await _productRepository.UpdateAsync(product);
 
             return order.Id;
         }
+
 
 
         public async Task<List<AdminOrderDTO>> GetAllOrdersForAdminAsync()
@@ -209,37 +212,86 @@ namespace TekTrov.Application.Services
             }).ToList();
         }
 
-        public async Task UpdateOrderStatusAsync(int orderId, OrderStatus status)
+        public async Task UpdateOrderStatusAsync(int orderId, OrderStatus newStatus)
         {
             var order = await _orderRepository.GetByIdAsync(orderId)
                 ?? throw new Exception("Order not found");
+
             if (order.Status == OrderStatus.Cancelled)
                 throw new Exception("Cancelled order cannot be updated");
 
             if (order.Status == OrderStatus.Delivered)
                 throw new Exception("Delivered order cannot be updated");
 
-            // Allowed transitions only
-            if (order.Status == OrderStatus.Pending &&
-                status != OrderStatus.Shipped &&
-                status != OrderStatus.Cancelled)
+            if (order.Status == OrderStatus.Pending)
             {
-                throw new Exception("Invalid status transition");
+                if (newStatus != OrderStatus.Shipped &&
+                    newStatus != OrderStatus.Cancelled)
+                    throw new Exception("Pending order can only be Shipped or Cancelled");
             }
 
-            if (order.Status == OrderStatus.Shipped &&
-                status != OrderStatus.Delivered)
+            if (order.Status == OrderStatus.Shipped)
             {
-                throw new Exception("Invalid status transition");
+                if (newStatus != OrderStatus.Delivered)
+                    throw new Exception("Shipped order can only be Delivered");
             }
 
-            order.Status = status;
-
+            order.Status = newStatus;
             await _orderRepository.UpdateAsync(order);
+        }
 
+        private static void EnsureUserNotBlocked(User user)
+        {
+            if (user.IsBlocked)
+                throw new Exception("Your account is blocked. You cannot place orders.");
+        }
+
+        private async Task EnsureUserNotBlockedAsync(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new Exception("User not found");
+
+            if (user.IsBlocked)
+                throw new Exception("Your account has been blocked. You cannot place orders.");
+        }
+
+        public async Task MarkOrderAsPaidAsync(int orderId, int userId)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId, userId)
+                ?? throw new Exception("Order not found");
+
+            if (order.Status != OrderStatus.Pending)
+                throw new Exception("Only pending orders can be paid");
+
+            foreach (var item in order.OrderItems)
+            {
+                var product = await _productRepository.GetByIdAsync(item.ProductId)
+                    ?? throw new Exception("Product not found");
+
+                if (product.Stock < item.Quantity)
+                    throw new Exception($"Insufficient stock for {product.Name}");
+            }
+
+            foreach (var item in order.OrderItems)
+            {
+                var product = await _productRepository.GetByIdAsync(item.ProductId)!;
+                product.Stock -= item.Quantity;
+                await _productRepository.UpdateAsync(product);
+            }
 
             await _orderRepository.UpdateAsync(order);
         }
+
+        public async Task DeleteOrderAsync(int orderId)
+        {
+            var order = await _orderRepository.GetByIdAsync(orderId)
+                        ?? throw new Exception("Order not found");
+
+            await _orderRepository.DeleteAsync(order);
+        }
+
+
+
 
 
 

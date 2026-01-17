@@ -49,21 +49,37 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO dto)
     {
-        var result = await _userService.LoginAsync(dto);
+        try
+        {
+            var result = await _userService.LoginAsync(dto);
 
-        HttpContext.Session.SetString(
-       "RefreshToken",
-       result.RefreshToken
-   );
+            HttpContext.Session.SetString(
+                "RefreshToken",
+                result.RefreshToken
+            );
 
-        return Ok(ApiResponse<object>.SuccessResponse(
-       new
-       {
-           accessToken = result.AccessToken
-       },
-       "Login successful"
-   ));
+            return Ok(ApiResponse<object>.SuccessResponse(
+                new
+                {
+                    accessToken = result.AccessToken
+                },
+                "Login successful"
+            ));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(
+                ApiResponse<object>.FailureResponse(ex.Message, 401)
+            );
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(
+                ApiResponse<object>.FailureResponse(ex.Message, 400)
+            );
+        }
     }
+
 
 
 

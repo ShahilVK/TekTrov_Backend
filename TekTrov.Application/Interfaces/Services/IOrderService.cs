@@ -22,7 +22,9 @@ namespace TekTrov.Application.Interfaces.Services
 
         Task<List<AdminOrderDTO>> GetAllOrdersForAdminAsync();
         Task UpdateOrderStatusAsync(int orderId, OrderStatus status);
+        Task MarkOrderAsPaidAsync(int orderId, int userId);
 
+         Task DeleteOrderAsync(int orderId);
 
     }
 }

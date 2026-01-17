@@ -73,9 +73,8 @@ public class OrdersController : ControllerBase
             "Order fetched successfully"
         ));
     }
-
     [Authorize(Roles = "User")]
-    [HttpPost("Order Inside Cart")]
+    [HttpPost("Order-Inside-Cart")]
     public async Task<IActionResult> Checkout([FromBody] CheckoutDTO dto)
     {
         if (!ModelState.IsValid)
@@ -86,16 +85,23 @@ public class OrdersController : ControllerBase
             User.FindFirst(ClaimTypes.NameIdentifier)!.Value
         );
 
-      
+        try
+        {
+            var orderId = await _orderService.PlaceOrderAsync(userId, dto);
 
-        var orderId = await _orderService.PlaceOrderAsync(userId, dto);
-
-        return Ok(ApiResponse<int>.SuccessResponse(
-            orderId,
-            "Order placed successfully"
-        ));
-
+            return Ok(ApiResponse<int>.SuccessResponse(
+                orderId,
+                "Order placed successfully"
+            ));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(
+                ApiResponse<object>.FailureResponse(ex.Message, 400)
+            );
+        }
     }
+
 
 
 
@@ -114,5 +120,22 @@ public class OrdersController : ControllerBase
             "Order cancelled successfully"
         ));
     }
+
+    [Authorize(Roles = "User")]
+    [HttpPost("{orderId:int}/payment-success")]
+    public async Task<IActionResult> PaymentSuccess(int orderId)
+    {
+        var userId = int.Parse(
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value
+        );
+
+        await _orderService.MarkOrderAsPaidAsync(orderId, userId);
+
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
+            "Payment successful and stock updated"
+        ));
+    }
+
 
 }

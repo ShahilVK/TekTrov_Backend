@@ -47,5 +47,16 @@ namespace TekTrov.WebApi.Controllers
                 "Order status updated successfully"
             ));
         }
+
+        [HttpDelete("{orderId:int}")]
+        public async Task<IActionResult> DeleteOrder(int orderId)
+        {
+            await _orderService.DeleteOrderAsync(orderId);
+
+            return Ok(ApiResponse<bool>.SuccessResponse(
+                true,
+                "Order deleted successfully"
+            ));
+        }
     }
 }
