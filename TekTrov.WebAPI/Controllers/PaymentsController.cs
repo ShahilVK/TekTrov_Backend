@@ -62,11 +62,16 @@ namespace TekTrov.WebApi.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+        private readonly IOrderService _orderService;
 
-        public PaymentsController(IPaymentService paymentService)
+        public PaymentsController(
+     IPaymentService paymentService,
+     IOrderService orderService)
         {
             _paymentService = paymentService;
+            _orderService = orderService;
         }
+
         [HttpPost("razorpay/create-order")]
         public async Task<IActionResult> CreateRazorpayOrder(
                   [FromBody] CreateRazorpayOrderDTO dto)
@@ -80,17 +85,38 @@ namespace TekTrov.WebApi.Controllers
             ));
         }
 
+        //[HttpPost("razorpay/verify")]
+        //public async Task<IActionResult> VerifyPayment(
+        //     [FromBody] RazorpayPaymentDTO dto)
+        //{
+        //    await _paymentService.VerifyPaymentAsync(dto);
+
+        //    return Ok(ApiResponse<bool>.SuccessResponse(
+        //        true,
+        //        "Payment verified"
+        //    ));
+        //}
+
         [HttpPost("razorpay/verify")]
         public async Task<IActionResult> VerifyPayment(
-             [FromBody] RazorpayPaymentDTO dto)
+    [FromBody] RazorpayPaymentDTO dto)
         {
+            var userId = int.Parse(
+                User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+            );
+
+            // 1️⃣ Verify Razorpay signature
             await _paymentService.VerifyPaymentAsync(dto);
+
+            // 2️⃣ Reduce stock & update order
+            await _orderService.MarkOrderAsPaidAsync(dto.OrderId, userId);
 
             return Ok(ApiResponse<bool>.SuccessResponse(
                 true,
-                "Payment verified"
+                "Payment verified and stock updated"
             ));
         }
+
     }
 }
 

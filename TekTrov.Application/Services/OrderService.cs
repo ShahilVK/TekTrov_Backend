@@ -123,26 +123,26 @@ namespace TekTrov.Application.Services
 
         public async Task CancelOrderAsync(int userId, int orderId)
         {
-            var order = await _orderRepository.GetByIdAsync(orderId, userId);
+            var order = await _orderRepository
+                .GetOrderWithItemsAndProductsAsync(orderId, userId)
+                ?? throw new Exception("Order not found");
 
-            if (order == null)
-                throw new Exception("Order not found");
+            if (order.Status == OrderStatus.Delivered)
+                throw new Exception("Delivered orders cannot be cancelled");
 
-            if (order.Status != OrderStatus.Pending)
-                throw new Exception("Only pending orders can be cancelled");
-
-            foreach (var item in order.OrderItems)
+            if (order.Status == OrderStatus.Shipped)
             {
-                var product = item.Product!;
-                product.Stock += item.Quantity;
-
-                await _productRepository.UpdateAsync(product);
+                foreach (var item in order.OrderItems)
+                {
+                    item.Product!.Stock += item.Quantity;
+                    await _productRepository.UpdateAsync(item.Product);
+                }
             }
 
             order.Status = OrderStatus.Cancelled;
-
             await _orderRepository.UpdateAsync(order);
         }
+
 
 
         public async Task<int> PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
@@ -212,6 +212,7 @@ namespace TekTrov.Application.Services
             }).ToList();
         }
 
+
         public async Task UpdateOrderStatusAsync(int orderId, OrderStatus newStatus)
         {
             var order = await _orderRepository.GetByIdAsync(orderId)
@@ -223,28 +224,37 @@ namespace TekTrov.Application.Services
             if (order.Status == OrderStatus.Delivered)
                 throw new Exception("Delivered order cannot be updated");
 
-            if (order.Status == OrderStatus.Pending)
-            {
-                if (newStatus != OrderStatus.Shipped &&
-                    newStatus != OrderStatus.Cancelled)
-                    throw new Exception("Pending order can only be Shipped or Cancelled");
-            }
+            if (order.Status == OrderStatus.Pending &&
+                newStatus != OrderStatus.Shipped &&
+                newStatus != OrderStatus.Cancelled)
+                throw new Exception("Pending order can only be Shipped or Cancelled");
 
-            if (order.Status == OrderStatus.Shipped)
+            if (order.Status == OrderStatus.Shipped &&
+                newStatus != OrderStatus.Delivered)
+                throw new Exception("Shipped order can only be Delivered");
+
+            if (order.Status == OrderStatus.Shipped &&
+                newStatus == OrderStatus.Delivered)
             {
-                if (newStatus != OrderStatus.Delivered)
-                    throw new Exception("Shipped order can only be Delivered");
+                foreach (var item in order.OrderItems)
+                {
+                    var product = item.Product
+                        ?? throw new Exception("Product not found");
+
+                    if (product.Stock < item.Quantity)
+                        throw new Exception($"Insufficient stock for {product.Name}");
+
+                    product.Stock -= item.Quantity;
+                    await _productRepository.UpdateAsync(product);
+                }
             }
 
             order.Status = newStatus;
             await _orderRepository.UpdateAsync(order);
         }
 
-        private static void EnsureUserNotBlocked(User user)
-        {
-            if (user.IsBlocked)
-                throw new Exception("Your account is blocked. You cannot place orders.");
-        }
+
+
 
         private async Task EnsureUserNotBlockedAsync(int userId)
         {
@@ -255,9 +265,12 @@ namespace TekTrov.Application.Services
                 throw new Exception("Your account has been blocked. You cannot place orders.");
         }
 
+    
+
         public async Task MarkOrderAsPaidAsync(int orderId, int userId)
         {
-            var order = await _orderRepository.GetByIdAsync(orderId, userId)
+            var order = await _orderRepository
+                .GetOrderWithItemsAndProductsAsync(orderId, userId)
                 ?? throw new Exception("Order not found");
 
             if (order.Status != OrderStatus.Pending)
@@ -265,19 +278,18 @@ namespace TekTrov.Application.Services
 
             foreach (var item in order.OrderItems)
             {
-                var product = await _productRepository.GetByIdAsync(item.ProductId)
-                    ?? throw new Exception("Product not found");
-
-                if (product.Stock < item.Quantity)
-                    throw new Exception($"Insufficient stock for {product.Name}");
+                if (item.Product!.Stock < item.Quantity)
+                    throw new Exception($"Insufficient stock for {item.Product.Name}");
             }
 
             foreach (var item in order.OrderItems)
             {
-                var product = await _productRepository.GetByIdAsync(item.ProductId)!;
-                product.Stock -= item.Quantity;
-                await _productRepository.UpdateAsync(product);
+                item.Product!.Stock -= item.Quantity;
+                await _productRepository.UpdateAsync(item.Product);
             }
+
+            order.Status = OrderStatus.Shipped;
+            order.ModifiedOn = DateTime.UtcNow;
 
             await _orderRepository.UpdateAsync(order);
         }

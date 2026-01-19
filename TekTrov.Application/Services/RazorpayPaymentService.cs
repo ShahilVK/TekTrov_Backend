@@ -32,68 +32,6 @@ namespace TekTrov.Application.Services
             return BitConverter.ToString(hash).Replace("-", "").ToLower();
         }
 
-       // public async Task<object> HandleRazorpayPaymentAsync(
-       //int userId,
-       //RazorpayPaymentDTO dto)
-       // {
-          
-       //     if (string.IsNullOrWhiteSpace(dto.RazorpayOrderId))
-       //     {
-       //         var order = await _orderRepository.GetByIdAsync(dto.OrderId, userId)
-       //             ?? throw new Exception("Order not found");
-
-       //         if (order.Status != OrderStatus.Pending)
-       //             throw new Exception("Order already processed");
-
-       //         var client = new RazorpayClient(
-       //             _settings.KeyId,
-       //             _settings.KeySecret
-       //         );
-
-       //         var options = new Dictionary<string, object>
-       // {
-       //     { "amount", (int)(order.TotalAmount * 100) }, // paise
-       //     { "currency", "INR" },
-       //     { "receipt", $"order_{order.Id}" }
-       // };
-
-       //         var razorpayOrder = client.Order.Create(options);
-
-       //         return new RazorpayOrderResponseDTO
-       //         {
-       //             RazorpayOrderId = razorpayOrder["id"].ToString(),
-       //             Amount = order.TotalAmount
-       //         };
-       //     }
-
-       //     var existingOrder = await _orderRepository
-       //         .GetOrderWithItemsAndProductsAsync(dto.OrderId, userId)
-       //         ?? throw new Exception("Order not found");
-
-       //     if (existingOrder.Status != OrderStatus.Pending)
-       //         throw new Exception("Order already processed");
-
-       //     foreach (var item in existingOrder.OrderItems)
-       //     {
-       //         var product = item.Product!;
-
-       //         if (product.Stock < item.Quantity)
-       //             throw new Exception($"Insufficient stock for {product.Name}");
-       //     }
-
-       //     foreach (var item in existingOrder.OrderItems)
-       //     {
-       //         var product = item.Product!;
-       //         product.Stock -= item.Quantity;
-       //     }
-
-       //     existingOrder.Status = OrderStatus.Shipped;
-       //     existingOrder.ModifiedOn = DateTime.UtcNow;
-
-       //     await _orderRepository.UpdateAsync(existingOrder);
-
-       //     return true;
-       // }
 
 
         public Task<RazorpayOrderResponseDTO> CreateRazorpayOrderAsync(
@@ -131,6 +69,8 @@ namespace TekTrov.Application.Services
 
             return Task.FromResult(true);
         }
+
+
 
 
     }

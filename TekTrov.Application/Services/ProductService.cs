@@ -117,10 +117,5 @@ namespace TekTrov.Application.Services
             };
         }
 
-
-
-
-
-
     }
 }

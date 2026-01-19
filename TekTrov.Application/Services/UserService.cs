@@ -136,30 +136,6 @@ namespace TekTrov.Application.Services
             };
         }
 
-
-        //public async Task BlockUserAsync(int userId)
-        //{
-        //    var user = await _userRepository.GetByIdAsync(userId)
-        //        ?? throw new Exception("User not found");
-
-        //    if (user.IsBlocked)
-        //        throw new Exception("User already blocked");
-
-        //    user.IsBlocked = true;
-        //    await _userRepository.UpdateAsync(user);
-        //}
-
-        //public async Task UnblockUserAsync(int userId)
-        //{
-        //    var user = await _userRepository.GetByIdAsync(userId)
-        //        ?? throw new Exception("User not found");
-
-        //    if (!user.IsBlocked)
-        //        throw new Exception("User already unblocked");
-
-        //    user.IsBlocked = false;
-        //    await _userRepository.UpdateAsync(user);
-        //}
         public async Task<bool> ToggleBlockUserAsync(int userId)
         {
             var user = await _userRepository.GetByIdAsync(userId)
@@ -297,7 +273,7 @@ namespace TekTrov.Application.Services
             var user = await _userRepository.GetByIdAsync(userId)
                 ?? throw new Exception("User not found");
 
-            user.IsDeleted = true; // soft delete (recommended)
+            user.IsDeleted = true;
             await _userRepository.UpdateAsync(user);
         }
 
