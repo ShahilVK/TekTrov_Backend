@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using TekTrov.Application.Common;
 using TekTrov.Application.Interfaces.Services;
 using TekTrov.Domain.Enums;
+using TekTrov.WebApi.Hubs;
 
 namespace TekTrov.WebApi.Controllers;
 
@@ -12,10 +14,15 @@ namespace TekTrov.WebApi.Controllers;
 public class AdminUsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IHubContext<UserHub> _hubContext;
 
-    public AdminUsersController(IUserService userService)
+
+    public AdminUsersController(
+        IUserService userService,
+        IHubContext<UserHub> hubContext)
     {
         _userService = userService;
+        _hubContext = hubContext;
     }
 
     [HttpGet("{id:int}")]
@@ -57,6 +64,13 @@ public class AdminUsersController : ControllerBase
     public async Task<IActionResult> ToggleBlockUser(int userId)
     {
         var isBlocked = await _userService.ToggleBlockUserAsync(userId);
+
+        if (isBlocked)
+        {
+            await _hubContext.Clients
+                .User(userId.ToString())
+                .SendAsync("UserBlocked");
+        }
 
         return Ok(ApiResponse<bool>.SuccessResponse(
             true,

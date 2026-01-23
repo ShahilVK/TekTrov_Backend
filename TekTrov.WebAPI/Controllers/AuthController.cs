@@ -118,35 +118,45 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshToken()
     {
-
-        if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+        try
         {
-            return Unauthorized(ApiResponse<object>.FailureResponse(
-                "Refresh token missing", 401));
-        }
 
-
-        var result =
-            await _userService.RefreshTokenAsync(refreshToken);
-
-        Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/" });
-
-        Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddDays(7)
-        });
-
-        return Ok(ApiResponse<object>.SuccessResponse(
-            new
+            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
             {
-                accessToken = result.AccessToken
-            },
-            "Token refreshed"
-        ));
+                return Unauthorized(ApiResponse<object>.FailureResponse(
+                    "Refresh token missing", 401));
+            }
+
+
+            var result =
+                await _userService.RefreshTokenAsync(refreshToken);
+
+            //Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/" });
+
+            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
+            return Ok(ApiResponse<object>.SuccessResponse(
+                new
+                {
+                    accessToken = result.AccessToken
+                },
+                "Token refreshed"
+            ));
+
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(
+                ApiResponse<object>.FailureResponse(ex.Message, 401)
+            );
+        }
     }
 
 

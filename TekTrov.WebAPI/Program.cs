@@ -1,11 +1,14 @@
 ﻿
+using CloudinaryDotNet;
 using ECommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
+using TekTrov.Application.Common;
 using TekTrov.Application.DTOs;
 using TekTrov.Application.Interfaces.Repositories;
 using TekTrov.Application.Interfaces.Services;
@@ -13,8 +16,7 @@ using TekTrov.Application.Services;
 using TekTrov.Infrastructure.Data;
 using TekTrov.Infrastructure.Repositories;
 using TekTrov.Infrastructure.Services;
-using CloudinaryDotNet;
-using TekTrov.Application.Common;
+using TekTrov.WebApi.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -97,11 +99,17 @@ builder.Services.Configure<RazorpaySettings>(
 
 
 
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, NameIdentifierUserIdProvider>();
 
 
-// --------------------
-// Authentication (JWT)
-// --------------------
+
+
+
+
+
+
+
 //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 //.AddJwtBearer(options =>
 //{
@@ -129,31 +137,38 @@ builder.Services.Configure<RazorpaySettings>(
 //        ValidateLifetime = true,
 //        ClockSkew = TimeSpan.Zero,
 
-//        // 🔑 CRITICAL FIX
 //        NameClaimType = ClaimTypes.NameIdentifier,
-
 //        RoleClaimType = ClaimTypes.Role
 //    };
 
-
-//    // ✅ Allow JWT from cookie if needed
 //    options.Events = new JwtBearerEvents
 //    {
 //        OnMessageReceived = context =>
 //        {
-//            if (string.IsNullOrEmpty(context.Token) && context.Request.Cookies.ContainsKey("accessToken"))
+//            var path = context.HttpContext.Request.Path;
+
+//            if (path.StartsWithSegments("/api/auth/refresh"))
 //            {
-//                context.Token = context.Request.Cookies["accessToken"];
+//                context.NoResult();
+//                return Task.CompletedTask;
 //            }
+
+//            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+
+//            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+//            {
+//                context.Token = authHeader.Substring("Bearer ".Length).Trim();
+//            }
+
 //            return Task.CompletedTask;
 //        },
+
 //        OnTokenValidated = async context =>
 //        {
 //            var userRepo = context.HttpContext.RequestServices
 //                .GetRequiredService<IUserRepository>();
 
-//            var userIdClaim = context.Principal?
-//                .FindFirst(ClaimTypes.NameIdentifier);
+//            var userIdClaim = context.Principal?.FindFirst(ClaimTypes.NameIdentifier);
 
 //            if (userIdClaim == null)
 //            {
@@ -164,23 +179,15 @@ builder.Services.Configure<RazorpaySettings>(
 //            var userId = int.Parse(userIdClaim.Value);
 //            var user = await userRepo.GetByIdAsync(userId);
 
-//            // 🚫 BLOCKED USER HANDLING
 //            if (user == null || user.IsBlocked)
 //            {
 //                context.Fail("User is blocked by admin");
 //            }
 //        },
 
-
 //        OnChallenge = context =>
 //        {
 //            context.HandleResponse();
-
-//            var message =
-//                context.ErrorDescription != null &&
-//                context.ErrorDescription.ToLower().Contains("blocked")
-//                    ? "Your account has been blocked"
-//                    : "Invalid or missing token";
 
 //            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
 //            context.Response.ContentType = "application/json";
@@ -189,23 +196,10 @@ builder.Services.Configure<RazorpaySettings>(
 //                System.Text.Json.JsonSerializer.Serialize(new
 //                {
 //                    statusCode = 401,
-//                    message = message,
+//                    message = "Invalid or expired access token",
 //                    data = (object?)null
 //                })
 //            );
-//        },
-
-//        OnForbidden = context =>
-//        {
-//            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-//            context.Response.ContentType = "application/json";
-
-//            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
-//            {
-//                statusCode = 403,
-//                message = "You do not have permission to access this resource",
-//                data = (object?)null
-//            }));
 //        }
 //    };
 //});
@@ -244,21 +238,35 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
     options.Events = new JwtBearerEvents
     {
+        // ✅ FIX: Allow JWT from SignalR query string
         OnMessageReceived = context =>
         {
             var path = context.HttpContext.Request.Path;
 
+            // 🔑 SignalR sends token via query string
+            var accessToken = context.Request.Query["access_token"];
+
+            if (!string.IsNullOrEmpty(accessToken) &&
+                path.StartsWithSegments("/hubs/user"))
+            {
+                context.Token = accessToken;
+                return Task.CompletedTask;
+            }
+
+            // 🚫 Ignore refresh endpoint
             if (path.StartsWithSegments("/api/auth/refresh"))
             {
                 context.NoResult();
                 return Task.CompletedTask;
             }
 
+            // 🔑 Normal API Authorization header
             var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
 
-            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            if (!string.IsNullOrEmpty(authHeader) &&
+                authHeader.StartsWith("Bearer "))
             {
-                context.Token = authHeader.Substring("Bearer ".Length).Trim();
+                context.Token = authHeader["Bearer ".Length..].Trim();
             }
 
             return Task.CompletedTask;
@@ -280,6 +288,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             var userId = int.Parse(userIdClaim.Value);
             var user = await userRepo.GetByIdAsync(userId);
 
+            // 🚫 Blocked users are rejected everywhere (API + SignalR)
             if (user == null || user.IsBlocked)
             {
                 context.Fail("User is blocked by admin");
@@ -304,6 +313,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         }
     };
 });
+
 
 
 // --------------------
@@ -382,8 +392,10 @@ app.UseAuthorization();
 
 
 
+
 app.UseHttpsRedirection();
 
 
 app.MapControllers();
+app.MapHub<UserHub>("/hubs/user");
 app.Run();

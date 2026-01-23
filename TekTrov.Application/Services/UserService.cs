@@ -160,9 +160,9 @@ namespace TekTrov.Application.Services
                 user.Role
             );
 
-            //var newRefreshToken = _jwtService.GenerateRefreshToken();
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
 
-            //user.RefreshToken = newRefreshToken;
+            user.RefreshToken = newRefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
             await _userRepository.UpdateAsync(user);
