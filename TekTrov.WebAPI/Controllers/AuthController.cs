@@ -27,9 +27,14 @@ public class AuthController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(
-                ApiResponse<object>.FailureResponse(
-                    "Validation failed", 400));
+          
+            return BadRequest(ApiResponse<object>.FailureResponse(
+    ModelState.Values
+        .SelectMany(v => v.Errors)
+        .Select(e => e.ErrorMessage)
+        .FirstOrDefault() ?? "Validation failed",
+    400));
+
         }
 
         await _userService.RegisterAsync(dto);
@@ -53,10 +58,18 @@ public class AuthController : ControllerBase
         {
             var result = await _userService.LoginAsync(dto);
 
-            HttpContext.Session.SetString(
-                "RefreshToken",
-                result.RefreshToken
-            );
+
+            Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/" });
+
+            Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
 
             return Ok(ApiResponse<object>.SuccessResponse(
                 new
@@ -89,31 +102,43 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        HttpContext.Session.Clear();
+      
+        Response.Cookies.Delete("refreshToken", new CookieOptions
+        {
+            Path = "/"
+        });
 
-        return Ok(
-            ApiResponse<bool>.SuccessResponse(
-                true,
-                "Logout successful"));
+        return Ok(ApiResponse<bool>.SuccessResponse(
+            true,
+            "Logout successful"
+        ));
+
     }
-
+    [AllowAnonymous]
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshToken()
     {
-        var refreshToken =
-            HttpContext.Session.GetString("RefreshToken");
 
-        if (string.IsNullOrEmpty(refreshToken))
+        if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+        {
             return Unauthorized(ApiResponse<object>.FailureResponse(
-                "Session expired", 401));
+                "Refresh token missing", 401));
+        }
+
 
         var result =
             await _userService.RefreshTokenAsync(refreshToken);
 
-        HttpContext.Session.SetString(
-            "RefreshToken",
-            result.RefreshToken
-        );
+        Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/" });
+
+        Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(7)
+        });
 
         return Ok(ApiResponse<object>.SuccessResponse(
             new

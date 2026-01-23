@@ -23,7 +23,10 @@ namespace TekTrov.Infrastructure.Repositories
 
         public async Task<List<Product>> GetAllAsync()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Products
+    .Where(p => !p.IsDeleted)
+    .ToListAsync();
+
         }
 
         public async Task<Product?> GetByIdAsync(int id)
@@ -103,6 +106,18 @@ namespace TekTrov.Infrastructure.Repositories
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        public async Task SoftDeleteAsync(Product product)
+        {
+            product.IsDeleted = true;
+            _context.Products.Update(product);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<List<Product>> GetAllIncludingDeletedAsync()
+        {
+            return await _context.Products.ToListAsync();
+        }
+
 
 
 

@@ -23,6 +23,7 @@ namespace TekTrov.Domain.Entities
 
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 
-
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
     }
 }

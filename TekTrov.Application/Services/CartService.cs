@@ -18,37 +18,42 @@ public class CartService : ICartService
         _productRepository = productRepository;
     }
 
-    public async Task AddToCartAsync(int userId, int productId)
+
+
+
+    public async Task AddToCartAsync(
+    int userId,
+    int productId,
+    int quantity)
+{
+    if (quantity <= 0)
+        throw new Exception("Invalid quantity");
+
+    var product = await _productRepository.GetByIdAsync(productId)
+        ?? throw new Exception("Product not found");
+
+    if (product.Stock < quantity)
+        throw new Exception("Insufficient stock");
+
+    var cartItem = await _cartRepository.GetAsync(userId, productId);
+
+    if (cartItem == null)
     {
-        var product = await _productRepository.GetByIdAsync(productId);
-
-        if (product == null)
-            throw new Exception("Product not found");
-
-        if (product.Stock <= 0)
-            throw new Exception("Product is out of stock");
-
-        var cartItem = await _cartRepository.GetAsync(userId, productId);
-
-        if (cartItem != null)
-        {
-            if (cartItem.Quantity + 1 > product.Stock)
-                throw new Exception($"Only {product.Stock} items available in stock");
-
-            cartItem.Quantity += 1;
-            await _cartRepository.UpdateAsync(cartItem);
-            return;
-        }
-
-        var cart = new Cart
+        await _cartRepository.AddAsync(new Cart
         {
             UserId = userId,
             ProductId = productId,
-            Quantity = 1
-        };
-
-        await _cartRepository.AddAsync(cart);
+            Quantity = quantity
+        });
+        return;
     }
+
+    if (cartItem.Quantity + quantity > product.Stock)
+        throw new Exception($"Only {product.Stock} items available in stock");
+
+    cartItem.Quantity += quantity;
+    await _cartRepository.UpdateAsync(cartItem);
+}
 
     public async Task<List<CartItemResponseDTO>> GetCartAsync(int userId)
     {

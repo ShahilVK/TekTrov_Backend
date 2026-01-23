@@ -1,51 +1,4 @@
-﻿//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Mvc;
-//using System.Security.Claims;
-//using TekTrov.Application.Common;
-//using TekTrov.Application.DTOs.Payments;
-//using TekTrov.Application.Interfaces.Services;
-//using TekTrov.Application.Services;
-
-//namespace TekTrov.WebApi.Controllers
-//{
-//    [ApiController]
-//    [Route("api/payments")]
-//    [Authorize]
-//    public class PaymentsController : ControllerBase
-//    {
-//        private readonly IPaymentService _paymentService;
-
-//        public PaymentsController(IPaymentService paymentService)
-//        {
-//            _paymentService = paymentService;
-//        }
-
-
-
-
-
-//        [HttpPost("razorpay/payment")]
-//        public async Task<IActionResult> RazorpayPayment(
-//    [FromBody] RazorpayPaymentDTO dto)
-//        {
-//            var userId = int.Parse(
-//                User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-//            );
-
-//            var result = await _paymentService
-//                .HandleRazorpayPaymentAsync(userId, dto);
-
-//            return Ok(ApiResponse<object>.SuccessResponse(
-//                result,
-//                "Razorpay payment processed"
-//            ));
-//        }
-
-
-
-
-//    }
-//}
+﻿
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -85,17 +38,7 @@ namespace TekTrov.WebApi.Controllers
             ));
         }
 
-        //[HttpPost("razorpay/verify")]
-        //public async Task<IActionResult> VerifyPayment(
-        //     [FromBody] RazorpayPaymentDTO dto)
-        //{
-        //    await _paymentService.VerifyPaymentAsync(dto);
-
-        //    return Ok(ApiResponse<bool>.SuccessResponse(
-        //        true,
-        //        "Payment verified"
-        //    ));
-        //}
+ 
 
         [HttpPost("razorpay/verify")]
         public async Task<IActionResult> VerifyPayment(
@@ -105,10 +48,8 @@ namespace TekTrov.WebApi.Controllers
                 User.FindFirst(ClaimTypes.NameIdentifier)!.Value
             );
 
-            // 1️⃣ Verify Razorpay signature
             await _paymentService.VerifyPaymentAsync(dto);
 
-            // 2️⃣ Reduce stock & update order
             await _orderService.MarkOrderAsPaidAsync(dto.OrderId, userId);
 
             return Ok(ApiResponse<bool>.SuccessResponse(

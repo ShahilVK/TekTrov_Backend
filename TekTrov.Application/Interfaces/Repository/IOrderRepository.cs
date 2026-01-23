@@ -23,6 +23,8 @@ namespace TekTrov.Application.Interfaces.Repositories
         Task<Order?> GetOrderWithItemsAndProductsAsync(int orderId, int userId);
 
         Task DeleteAsync(Order order);
+        Task<bool> AnyOrderExistsForUserAsync(int userId);
+
 
     }
 }

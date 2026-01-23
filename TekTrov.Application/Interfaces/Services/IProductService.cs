@@ -27,6 +27,9 @@ namespace TekTrov.Application.Interfaces.Services
         Task<PagedResult<ProductResponseDTO>> GetProductsPagedAsync(
        int pageNumber,
        int pageSize);
+        Task RestoreProductAsync(int productId);
+        Task<List<Product>> GetAllProductsForAdminAsync();
+
 
 
 

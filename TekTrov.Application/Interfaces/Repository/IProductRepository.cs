@@ -20,6 +20,8 @@ namespace TekTrov.Application.Interfaces.Repositories
 
         Task<int> CountAsync();
         Task<List<Product>> GetPagedAsync(int pageNumber, int pageSize);
+        Task<List<Product>> GetAllIncludingDeletedAsync();
+
 
 
 

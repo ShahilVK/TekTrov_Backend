@@ -88,6 +88,14 @@ namespace TekTrov.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> AnyOrderExistsForUserAsync(int userId)
+        {
+            return await _context.Orders
+                .AsNoTracking()
+                .AnyAsync(o => o.UserId == userId);
+        }
+
+
 
 
     }

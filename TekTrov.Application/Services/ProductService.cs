@@ -65,6 +65,8 @@ namespace TekTrov.Application.Services
             await _productRepository.UpdateAsync(product);
         }
 
+
+
         public async Task DeleteProductAsync(int productId)
         {
             var product = await _productRepository.GetByIdAsync(productId);
@@ -72,8 +74,11 @@ namespace TekTrov.Application.Services
             if (product == null)
                 throw new Exception("Product not found");
 
-            await _productRepository.DeleteAsync(product);
+            product.IsDeleted = true;
+
+            await _productRepository.UpdateAsync(product);
         }
+
 
         public async Task<List<Product>> SearchProductsAsync(string query)
         {
@@ -116,6 +121,27 @@ namespace TekTrov.Application.Services
                 }).ToList()
             };
         }
+        public async Task RestoreProductAsync(int productId)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (product == null)
+                throw new Exception("Product not found");
+
+            if (!product.IsDeleted)
+                return; // already active
+
+            product.IsDeleted = false;
+            product.DeletedAt = null;
+
+            await _productRepository.UpdateAsync(product);
+        }
+        public async Task<List<Product>> GetAllProductsForAdminAsync()
+        {
+            return await _productRepository.GetAllIncludingDeletedAsync();
+        }
+
+
 
     }
 }

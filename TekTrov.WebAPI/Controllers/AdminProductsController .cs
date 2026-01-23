@@ -29,7 +29,7 @@ namespace TekTrov.WebAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
-            var products = await _productService.GetAllProductsAsync();
+            var products = await _productService.GetAllProductsForAdminAsync();
 
             return Ok(ApiResponse<object>.SuccessResponse(
                 products,
@@ -87,6 +87,19 @@ namespace TekTrov.WebAPI.Controllers
             return Ok(ApiResponse<bool>.SuccessResponse(
                 true, "Product deleted successfully"));
         }
+
+        [HttpPatch("{id}/restore")]
+        public async Task<IActionResult> RestoreProduct(int id)
+        {
+            await _productService.RestoreProductAsync(id);
+
+            return Ok(ApiResponse<bool>.SuccessResponse(
+                true,
+                "Product restored successfully"
+            ));
+        }
+
+
     }
 
 }

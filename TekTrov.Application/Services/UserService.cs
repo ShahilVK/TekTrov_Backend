@@ -13,15 +13,18 @@ namespace TekTrov.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IJwtService _jwtService;
         private readonly IEmailService _emailService;
+        private readonly IOrderRepository _orderRepository;
 
         public UserService(
-     IUserRepository userRepository,
-     IJwtService jwtService,
-     IEmailService emailService)
+          IUserRepository userRepository,
+          IJwtService jwtService,
+          IEmailService emailService,
+          IOrderRepository orderRepository)   // ✅ ADD
         {
             _userRepository = userRepository;
             _jwtService = jwtService;
             _emailService = emailService;
+            _orderRepository = orderRepository; // ✅ ADD
         }
 
 
@@ -46,7 +49,7 @@ namespace TekTrov.Application.Services
 
             var user = new User
             {
-                Name = dto.Name,
+                Name = dto.Name.Trim(),
                 Email = email,
                 Password = hashedPassword,
                 Role = Roles.User
@@ -111,20 +114,55 @@ namespace TekTrov.Application.Services
             };
         }
 
+        //public async Task<AuthResponseDTO> RefreshTokenAsync(string refreshToken)
+        //{
+        //    var user = await _userRepository.GetByRefreshTokenAsync(refreshToken);
+
+        //    if (user == null)
+        //        throw new Exception("Invalid or expired refresh token");
+
+        //    var newAccessToken = _jwtService.GenerateAccessToken(
+        //        user.Id, user.Email, user.Role
+        //    );
+
+        //    var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+        //    user.RefreshToken = newRefreshToken;
+        //    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+        //    await _userRepository.UpdateAsync(user);
+
+        //    return new AuthResponseDTO
+        //    {
+        //        AccessToken = newAccessToken,
+        //        RefreshToken = newRefreshToken
+        //    };
+        //}
         public async Task<AuthResponseDTO> RefreshTokenAsync(string refreshToken)
         {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                throw new UnauthorizedAccessException("Refresh token is missing");
+
             var user = await _userRepository.GetByRefreshTokenAsync(refreshToken);
 
             if (user == null)
-                throw new Exception("Invalid or expired refresh token");
+                throw new UnauthorizedAccessException("Invalid refresh token");
+
+            if (user.IsBlocked)
+                throw new UnauthorizedAccessException("User is blocked by admin");
+
+            if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                throw new UnauthorizedAccessException("Refresh token expired");
 
             var newAccessToken = _jwtService.GenerateAccessToken(
-                user.Id, user.Email, user.Role
+                user.Id,
+                user.Email,
+                user.Role
             );
 
-            var newRefreshToken = _jwtService.GenerateRefreshToken();
+            //var newRefreshToken = _jwtService.GenerateRefreshToken();
 
-            user.RefreshToken = newRefreshToken;
+            //user.RefreshToken = newRefreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
             await _userRepository.UpdateAsync(user);
@@ -132,21 +170,37 @@ namespace TekTrov.Application.Services
             return new AuthResponseDTO
             {
                 AccessToken = newAccessToken,
-                RefreshToken = newRefreshToken
+                RefreshToken = refreshToken
             };
         }
+
+
 
         public async Task<bool> ToggleBlockUserAsync(int userId)
         {
             var user = await _userRepository.GetByIdAsync(userId)
                 ?? throw new Exception("User not found");
 
+            var hasOrders = await _orderRepository
+                .AnyOrderExistsForUserAsync(userId);
+
+            if (hasOrders)
+                throw new Exception("User with existing orders cannot be blocked");
+
             user.IsBlocked = !user.IsBlocked;
+
+            if (user.IsBlocked)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+            }
 
             await _userRepository.UpdateAsync(user);
 
             return user.IsBlocked;
         }
+
+
 
 
         public async Task ChangePasswordAsync(int userId, ChangePasswordDTO dto)

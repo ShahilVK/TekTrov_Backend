@@ -16,10 +16,15 @@ namespace TekTrov.Application.DTOs.Auth
         [Required(ErrorMessage = "Name is required")]
         [MinLength(3, ErrorMessage = "Name must be at least 3 characters")]
         [MaxLength(50, ErrorMessage = "Name cannot exceed 50 characters")]
-        [RegularExpression(
-    @"^[A-Za-z]{3,50}$",
-    ErrorMessage = "Name must contain only letters, no spaces, and at least 3 characters"
-    )]
+    //    [RegularExpression(
+    //@"^[A-Za-z]{3,50}$",
+    //ErrorMessage = "Name must contain only letters, no spaces, and at least 3 characters"
+    //)]
+    [RegularExpression(
+    @"^[A-Za-z]+(?: [A-Za-z]+)*$",
+    ErrorMessage = "Name must contain only letters and spaces"
+)]
+
         public string Name
         {
             get => _name;

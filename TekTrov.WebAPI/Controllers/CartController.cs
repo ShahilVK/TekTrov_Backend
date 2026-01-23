@@ -21,26 +21,30 @@ public class CartController : ControllerBase
         _cartService = cartService;
     }
 
+
+
+
     [HttpPost("{productId:int}")]
-    public async Task<IActionResult> AddToCart(int productId)
+    public async Task<IActionResult> AddToCart(
+    int productId,
+    [FromBody] AddToCartDTO dto)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        var userId = int.Parse(
+            User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+        );
 
-        if (userIdClaim == null)
-        {
-            return Unauthorized(ApiResponse<object>.FailureResponse(
-                "Invalid or missing token", 401));
-        }
-
-        var userId = int.Parse(userIdClaim.Value);
-
-        await _cartService.AddToCartAsync(userId, productId);
+        await _cartService.AddToCartAsync(
+            userId,
+            productId,
+            dto.Quantity
+        );
 
         return Ok(ApiResponse<bool>.SuccessResponse(
             true,
             "Product added to cart"
         ));
     }
+
     [HttpGet]
     public async Task<IActionResult> GetCart()
     {
