@@ -19,12 +19,12 @@ namespace TekTrov.Application.Services
           IUserRepository userRepository,
           IJwtService jwtService,
           IEmailService emailService,
-          IOrderRepository orderRepository)   // ✅ ADD
+          IOrderRepository orderRepository)   
         {
             _userRepository = userRepository;
             _jwtService = jwtService;
             _emailService = emailService;
-            _orderRepository = orderRepository; // ✅ ADD
+            _orderRepository = orderRepository; 
         }
 
 
@@ -114,30 +114,6 @@ namespace TekTrov.Application.Services
             };
         }
 
-        //public async Task<AuthResponseDTO> RefreshTokenAsync(string refreshToken)
-        //{
-        //    var user = await _userRepository.GetByRefreshTokenAsync(refreshToken);
-
-        //    if (user == null)
-        //        throw new Exception("Invalid or expired refresh token");
-
-        //    var newAccessToken = _jwtService.GenerateAccessToken(
-        //        user.Id, user.Email, user.Role
-        //    );
-
-        //    var newRefreshToken = _jwtService.GenerateRefreshToken();
-
-        //    user.RefreshToken = newRefreshToken;
-        //    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-
-        //    await _userRepository.UpdateAsync(user);
-
-        //    return new AuthResponseDTO
-        //    {
-        //        AccessToken = newAccessToken,
-        //        RefreshToken = newRefreshToken
-        //    };
-        //}
         public async Task<AuthResponseDTO> RefreshTokenAsync(string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))

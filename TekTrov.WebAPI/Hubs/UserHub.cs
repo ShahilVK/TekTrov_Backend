@@ -4,7 +4,7 @@ using System.Security.Claims;
 
 namespace TekTrov.WebApi.Hubs
 {
-    [Authorize] // ✅ Required: JWT auth for SignalR
+    [Authorize] 
     public class UserHub : Hub
     {
         public override async Task OnConnectedAsync()
@@ -15,12 +15,10 @@ namespace TekTrov.WebApi.Hubs
 
             if (string.IsNullOrWhiteSpace(userId))
             {
-                // 🚫 No user → block connection
                 Context.Abort();
                 return;
             }
 
-            // ✅ Each user has their own group (userId)
             await Groups.AddToGroupAsync(Context.ConnectionId, userId);
 
             await base.OnConnectedAsync();

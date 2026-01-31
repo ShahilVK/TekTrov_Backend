@@ -72,7 +72,7 @@ namespace TekTrov.Application.Services
 
         public async Task<int> PlaceOrderAsync(int userId, CheckoutDTO dto)
         {
-            await EnsureUserNotBlockedAsync(userId); // ✅ FIXED
+            await EnsureUserNotBlockedAsync(userId); 
 
             var cartItems = await _cartRepository.GetByUserIdAsync(userId);
 
@@ -147,7 +147,7 @@ namespace TekTrov.Application.Services
 
         public async Task<int> PlaceDirectOrderAsync(int userId, DirectOrderDTO dto)
         {
-            await EnsureUserNotBlockedAsync(userId); // ✅ FIXED
+            await EnsureUserNotBlockedAsync(userId); 
 
             if (dto.Quantity <= 0)
                 throw new Exception("Invalid quantity");

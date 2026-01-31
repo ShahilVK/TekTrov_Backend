@@ -108,103 +108,6 @@ builder.Services.AddSingleton<IUserIdProvider, NameIdentifierUserIdProvider>();
 
 
 
-
-
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//.AddJwtBearer(options =>
-//{
-//    var jwtSettings = builder.Configuration
-//        .GetSection("Jwt")
-//        .Get<JwtSettings>()
-//        ?? throw new InvalidOperationException("JWT settings missing");
-
-//    var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
-
-//    options.RequireHttpsMetadata = false;
-//    options.SaveToken = true;
-
-//    options.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuerSigningKey = true,
-//        IssuerSigningKey = new SymmetricSecurityKey(key),
-
-//        ValidateIssuer = true,
-//        ValidIssuer = jwtSettings.Issuer,
-
-//        ValidateAudience = true,
-//        ValidAudience = jwtSettings.Audience,
-
-//        ValidateLifetime = true,
-//        ClockSkew = TimeSpan.Zero,
-
-//        NameClaimType = ClaimTypes.NameIdentifier,
-//        RoleClaimType = ClaimTypes.Role
-//    };
-
-//    options.Events = new JwtBearerEvents
-//    {
-//        OnMessageReceived = context =>
-//        {
-//            var path = context.HttpContext.Request.Path;
-
-//            if (path.StartsWithSegments("/api/auth/refresh"))
-//            {
-//                context.NoResult();
-//                return Task.CompletedTask;
-//            }
-
-//            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-
-//            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
-//            {
-//                context.Token = authHeader.Substring("Bearer ".Length).Trim();
-//            }
-
-//            return Task.CompletedTask;
-//        },
-
-//        OnTokenValidated = async context =>
-//        {
-//            var userRepo = context.HttpContext.RequestServices
-//                .GetRequiredService<IUserRepository>();
-
-//            var userIdClaim = context.Principal?.FindFirst(ClaimTypes.NameIdentifier);
-
-//            if (userIdClaim == null)
-//            {
-//                context.Fail("Invalid token");
-//                return;
-//            }
-
-//            var userId = int.Parse(userIdClaim.Value);
-//            var user = await userRepo.GetByIdAsync(userId);
-
-//            if (user == null || user.IsBlocked)
-//            {
-//                context.Fail("User is blocked by admin");
-//            }
-//        },
-
-//        OnChallenge = context =>
-//        {
-//            context.HandleResponse();
-
-//            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-//            context.Response.ContentType = "application/json";
-
-//            return context.Response.WriteAsync(
-//                System.Text.Json.JsonSerializer.Serialize(new
-//                {
-//                    statusCode = 401,
-//                    message = "Invalid or expired access token",
-//                    data = (object?)null
-//                })
-//            );
-//        }
-//    };
-//});
-
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
@@ -238,12 +141,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
     options.Events = new JwtBearerEvents
     {
-        // ✅ FIX: Allow JWT from SignalR query string
         OnMessageReceived = context =>
         {
             var path = context.HttpContext.Request.Path;
 
-            // 🔑 SignalR sends token via query string
             var accessToken = context.Request.Query["access_token"];
 
             if (!string.IsNullOrEmpty(accessToken) &&
@@ -253,14 +154,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 return Task.CompletedTask;
             }
 
-            // 🚫 Ignore refresh endpoint
             if (path.StartsWithSegments("/api/auth/refresh"))
             {
                 context.NoResult();
                 return Task.CompletedTask;
             }
 
-            // 🔑 Normal API Authorization header
             var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
 
             if (!string.IsNullOrEmpty(authHeader) &&
@@ -288,7 +187,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             var userId = int.Parse(userIdClaim.Value);
             var user = await userRepo.GetByIdAsync(userId);
 
-            // 🚫 Blocked users are rejected everywhere (API + SignalR)
             if (user == null || user.IsBlocked)
             {
                 context.Fail("User is blocked by admin");

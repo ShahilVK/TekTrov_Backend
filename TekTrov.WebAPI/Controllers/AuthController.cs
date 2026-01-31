@@ -131,7 +131,6 @@ public class AuthController : ControllerBase
             var result =
                 await _userService.RefreshTokenAsync(refreshToken);
 
-            //Response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/" });
 
             Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
             {
